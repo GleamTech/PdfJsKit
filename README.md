@@ -1,4 +1,4 @@
-![PdfJsKit Logo](https://raw.githubusercontent.com/GleamTech/PdfJsKit/master/images/logo-wide.png "PdfJsKit Logo")
+![PdfJsKit Logo](https://raw.githubusercontent.com/GleamTech/PdfJsKit/master/images/logo-wide.svg "PdfJsKit Logo")
 
 # PDF.js supercharged with custom themes
 
