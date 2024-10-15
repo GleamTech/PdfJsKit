@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>PdfJsKit - Script Bundle Test</title>
+	  <script src="pdfjskit\pdfjskit.min.js"></script>
+  </head>
+  <body>
+
+    <div id="container"></div>
+
+    <script type="module">
+      var pdfViewer = new PdfJsKit.PdfViewer({
+        documentUrl: "pdfjskit/sample.pdf",
+        width: "80%",
+        height: 720,
+        resizable: true,
+        language: "en-US",
+        theme: "slate, classic-dark"
+      });
+
+      pdfViewer.render(document.getElementById("container"));
+    </script>
+
+  </body>
+</html>
