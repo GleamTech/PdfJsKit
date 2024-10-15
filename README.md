@@ -39,9 +39,9 @@ By default PdfJsKit loads assets from `pdfjskit` subdirectory relative to host p
 import PdfViewer from "pdfjskit";
 
 var pdfViewer = new PdfViewer({
-  documentUrl: "/test-files/sample.pdf",
-  width: 800,
-  height: 600,
+  documentUrl: "pdfjskit/sample.pdf",
+  width: "80%",
+  height: 720,
   resizable: true,
   language: "en-US",
   theme: "slate, classic-dark"
@@ -93,7 +93,7 @@ For plain JS projects, we recommend using Vite, this way you can import from mod
           import PdfViewer from "pdfjskit";
 
           var pdfViewer = new PdfViewer({
-            documentUrl: new URL("sample.pdf", window.location.href).pathname,
+            documentUrl: "pdfjskit/sample.pdf",
             width: "80%",
             height: 720,
             resizable: true,
@@ -106,7 +106,6 @@ For plain JS projects, we recommend using Vite, this way you can import from mod
     
       </body>
     </html>
-
     ```
 
 5. Now you can run the dev web server:
