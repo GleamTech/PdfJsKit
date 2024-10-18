@@ -56,7 +56,10 @@ Note that the NPM package contains a ES6 module `pdfjskit.min.mjs`, we also prov
 
 ## API Documentation
 
-- [Html API Docs]()
+- [Html API Docs](https://gleamtech.github.io/PdfJsKit/dist/docs/)
 - [Markdown API Docs](https://github.com/GleamTech/PdfJsKit/blob/main/APIDocs.md)
 
-## Live Demo
+## Live Demos
+
+- [Module Bundle Test](https://gleamtech.github.io/PdfJsKit/dist/test-module.html)
+- [Script Bundle Test](https://gleamtech.github.io/PdfJsKit/dist/test-script.html)

@@ -11,6 +11,8 @@ node_modules
 demos/**/dist
 demos/**/dist-ssr
 demos/**/public
+package/dist
+package/docs
 *.local
 
 # Editor directories and files

@@ -4,11 +4,11 @@
 
 Integrate a PDF Viewer into your web project rapidly.
 
-- Modern UI and new features on top of PDF.js.
+*   Modern UI and new features on top of PDF.js.
 
-- HTML5 zero-footprint PDF Viewer.
+*   HTML5 zero-footprint PDF Viewer.
 
-- Use any JS framework (React, Vue, Angular, Svelte, Blazor etc).
+*   Use any JS framework (React, Vue, Angular, Svelte, Blazor etc).
 
 PDF.js is a great open-source project which is frequently updated and new features are being added to, however looks-wise it's ugly, or maybe let's say it looks outdated. How about getting the latest PDF features and fixes from PDF.js but having a slick look on the presentation side?
 
@@ -52,75 +52,14 @@ pdfViewer.render(document.getElementById("container"));
 
 Note that the NPM package contains a ES6 module `pdfjskit.min.mjs`, we also provide a script version `pdfjskit.min.js` in [dist](https://github.com/GleamTech/PdfJsKit/tree/main/dist) directory.
 
-For plain JS projects, we recommend using Vite, this way you can import from module in HTML files easily:
+- [Using PdfJsKit in plain JS projects with Vite](https://github.com/GleamTech/PdfJsKit/blob/main/examples/pdfjskit-vite-example/README.md)
 
-1. Create a Vite project template:
-   ```console
-   npm create vite@latest
-   ```
+## API Documentation
 
-   Choose the settings:
+- [Html API Docs](https://gleamtech.github.io/PdfJsKit/dist/docs/)
+- [Markdown API Docs](https://github.com/GleamTech/PdfJsKit/blob/main/APIDocs.md)
 
-   ```console
-   ✔ Project name: … pdfjskit-vite-example
-   ✔ Select a framework: › Vanilla
-   ✔ Select a variant: › JavaScript
-   ```
+## Live Demos
 
-3. A subdirectory with your project name will be created, do the following:
-
-   ```console
-   cd pdfjskit-vite-example
-   npm install
-   npm install pdfjskit
-   ```
-
-4.  Edit `index.html` and replace contents with:
-
-    ```html
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-        <title>PdfJsKit Vite Example</title>
-      </head>
-      <body>
-  
-        <div id="container"></div>
-    
-        <script type="module">
-          import PdfViewer from "pdfjskit";
-
-          var pdfViewer = new PdfViewer({
-            documentUrl: "pdfjskit/sample.pdf",
-            width: "80%",
-            height: 720,
-            resizable: true,
-            language: "en-US",
-            theme: "slate, classic-dark"
-          });
-
-          pdfViewer.render(document.getElementById("container"));
-        </script>
-    
-      </body>
-    </html>
-    ```
-
-5. Now you can run the dev web server:
-
-    ```console
-    npm run dev
-    ```
-    
-    which will show:
-
-    ```console
-    ➜  Local:   http://localhost:5173/
-    ➜  Network: use --host to expose
-    ➜  press h + enter to show help    
-    ```
-
-    Click the Local url with CTRL key to launch the browser.
-    You will see that PDF Viewer is rendered in the page.
+- [Module Bundle Test](https://gleamtech.github.io/PdfJsKit/dist/test-module.html)
+- [Script Bundle Test](https://gleamtech.github.io/PdfJsKit/dist/test-script.html)
