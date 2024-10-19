@@ -50,14 +50,15 @@ var pdfViewer = new PdfViewer({
 pdfViewer.render(document.getElementById("container"));
 ```
 
-Note that the NPM package contains a ES6 module `pdfjskit.min.mjs`, we also provide a script version `pdfjskit.min.js` in [dist](https://github.com/GleamTech/PdfJsKit/tree/main/dist) directory.
+Note that the NPM package contains a ES6 module `pdfjskit.min.mjs`, we also provide a script version `pdfjskit.min.js` in GitHub [dist/pdfjskit](https://github.com/GleamTech/PdfJsKit/tree/main/dist/pdfjskit) directory and in developer package offered [here](https://www.pdfjskit.com/try).
 
-- [Using PdfJsKit in plain JS projects with Vite](https://github.com/GleamTech/PdfJsKit/blob/main/examples/pdfjskit-vite-example/README.md)
+- [Using PdfJsKit in plain JS projects with Vite](https://github.com/GleamTech/PdfJsKit/tree/main/examples/pdfjskit-vite-example)
 
-## API Documentation
+## Documentation
 
 - [Html API Docs](https://gleamtech.github.io/PdfJsKit/dist/docs/)
 - [Markdown API Docs](https://github.com/GleamTech/PdfJsKit/blob/main/APIDocs.md)
+- [Knowledge Base](https://github.com/GleamTech/PdfJsKit/wiki)
 
 ## Live Demos
 
