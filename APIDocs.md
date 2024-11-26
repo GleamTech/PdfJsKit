@@ -25,6 +25,7 @@
     *   [license](#license)
         *   [Parameters](#parameters-1)
     *   [element](#element)
+    *   [productInfo](#productinfo)
     *   [render](#render)
         *   [Parameters](#parameters-2)
     *   [show](#show)
@@ -409,6 +410,12 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 Gets the DOM element of this component in the page (if it's rendered).
 
 Type: [Element](https://developer.mozilla.org/docs/Web/API/Element)
+
+### productInfo
+
+Gets the product info for this component (e.g. product name and version).
+
+Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)
 
 ### render
 
