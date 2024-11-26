@@ -1,6 +1,6 @@
 {
   "name": "pdfjskit",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "PdfJsKit is a PDF Viewer built on top of PDF.js, with modern UI and new features which supports integration for all JS frameworks.",
   "keywords": [
     "pdf-viewer",
