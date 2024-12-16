@@ -524,6 +524,17 @@ module.exports = SILENT_ON_NON_WRITABLE_LENGTH_SET ? function (O, length) {
 
 /***/ }),
 
+/***/ 7680:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+
+module.exports = uncurryThis([].slice);
+
+
+/***/ }),
+
 /***/ 7628:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -1157,6 +1168,24 @@ module.exports = function (exec) {
     return true;
   }
 };
+
+
+/***/ }),
+
+/***/ 8745:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var NATIVE_BIND = __webpack_require__(616);
+
+var FunctionPrototype = Function.prototype;
+var apply = FunctionPrototype.apply;
+var call = FunctionPrototype.call;
+
+// eslint-disable-next-line es/no-reflect -- safe
+module.exports = typeof Reflect == 'object' && Reflect.apply || (NATIVE_BIND ? call.bind(apply) : function () {
+  return call.apply(apply, arguments);
+});
 
 
 /***/ }),
@@ -2804,6 +2833,21 @@ module.exports = function (source, i) {
 
 /***/ }),
 
+/***/ 1103:
+/***/ ((module) => {
+
+
+module.exports = function (exec) {
+  try {
+    return { error: false, value: exec() };
+  } catch (error) {
+    return { error: true, value: error };
+  }
+};
+
+
+/***/ }),
+
 /***/ 7750:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -3984,6 +4028,46 @@ $({ target: 'Iterator', proto: true, real: true }, {
 
 /***/ }),
 
+/***/ 1689:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var globalThis = __webpack_require__(4576);
+var apply = __webpack_require__(8745);
+var slice = __webpack_require__(7680);
+var newPromiseCapabilityModule = __webpack_require__(6043);
+var aCallable = __webpack_require__(9306);
+var perform = __webpack_require__(1103);
+
+var Promise = globalThis.Promise;
+
+var ACCEPT_ARGUMENTS = false;
+// Avoiding the use of polyfills of the previous iteration of this proposal
+// that does not accept arguments of the callback
+var FORCED = !Promise || !Promise['try'] || perform(function () {
+  Promise['try'](function (argument) {
+    ACCEPT_ARGUMENTS = argument === 8;
+  }, 8);
+}).error || !ACCEPT_ARGUMENTS;
+
+// `Promise.try` method
+// https://tc39.es/ecma262/#sec-promise.try
+$({ target: 'Promise', stat: true, forced: FORCED }, {
+  'try': function (callbackfn /* , ...args */) {
+    var args = arguments.length > 1 ? slice(arguments, 1) : [];
+    var promiseCapability = newPromiseCapabilityModule.f(this);
+    var result = perform(function () {
+      return apply(aCallable(callbackfn), undefined, args);
+    });
+    (result.error ? promiseCapability.reject : promiseCapability.resolve)(result.value);
+    return promiseCapability.promise;
+  }
+});
+
+
+/***/ }),
+
 /***/ 4628:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -4543,6 +4627,16 @@ $({ target: 'JSON', stat: true, forced: NO_SOURCE_SUPPORT }, {
 
 /***/ }),
 
+/***/ 5247:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+// TODO: Remove from `core-js@4`
+__webpack_require__(1689);
+
+
+/***/ }),
+
 /***/ 4979:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -4846,6 +4940,8 @@ var es_typed_array_to_reversed = __webpack_require__(7467);
 var es_typed_array_to_sorted = __webpack_require__(4732);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.with.js
 var es_typed_array_with = __webpack_require__(9577);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.promise.try.js
+var esnext_promise_try = __webpack_require__(5247);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-exception.stack.js
 var web_dom_exception_stack = __webpack_require__(4979);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.url-search-params.delete.js
@@ -4855,6 +4951,7 @@ var web_url_search_params_has = __webpack_require__(7566);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.url-search-params.size.js
 var web_url_search_params_size = __webpack_require__(8721);
 ;// ./src/shared/util.js
+
 
 
 
@@ -6664,11 +6761,13 @@ class AnnotationEditorUIManager {
   #changedExistingAnnotations = null;
   #commandManager = new CommandManager();
   #copyPasteAC = null;
+  #currentDrawingSession = null;
   #currentPageIndex = 0;
   #deletedAnnotationsElementIds = new Set();
   #draggingEditors = null;
   #editorTypes = null;
   #editorsToRescale = new Set();
+  _editorUndoBar = null;
   #enableHighlightFloatingButton = false;
   #enableUpdatedAddImage = false;
   #enableNewAltTextWhenAddingImage = false;
@@ -6763,7 +6862,7 @@ class AnnotationEditorUIManager {
       checker: arrowChecker
     }]]));
   }
-  constructor(container, viewer, altTextManager, eventBus, pdfDocument, pageColors, highlightColors, enableHighlightFloatingButton, enableUpdatedAddImage, enableNewAltTextWhenAddingImage, mlManager) {
+  constructor(container, viewer, altTextManager, eventBus, pdfDocument, pageColors, highlightColors, enableHighlightFloatingButton, enableUpdatedAddImage, enableNewAltTextWhenAddingImage, mlManager, editorUndoBar) {
     const signal = this._signal = this.#abortController.signal;
     this.#container = container;
     this.#viewer = viewer;
@@ -6803,6 +6902,7 @@ class AnnotationEditorUIManager {
       rotation: 0
     };
     this.isShiftKeyDown = false;
+    this._editorUndoBar = editorUndoBar || null;
   }
   destroy() {
     this.#updateModeCapability?.resolve();
@@ -6830,6 +6930,7 @@ class AnnotationEditorUIManager {
       clearTimeout(this.#translationTimeoutId);
       this.#translationTimeoutId = null;
     }
+    this._editorUndoBar?.destroy();
   }
   combinedSignal(ac) {
     return AbortSignal.any([this._signal, ac.signal]);
@@ -6854,6 +6955,15 @@ class AnnotationEditorUIManager {
   }
   get highlightColorNames() {
     return shadow(this, "highlightColorNames", this.highlightColors ? new Map(Array.from(this.highlightColors, e => e.reverse())) : null);
+  }
+  setCurrentDrawingSession(layer) {
+    if (layer) {
+      this.unselectAll();
+      this.disableUserSelect(true);
+    } else {
+      this.disableUserSelect(false);
+    }
+    this.#currentDrawingSession = layer;
   }
   setMainHighlightColorPicker(colorPicker) {
     this.#mainHighlightColorPicker = colorPicker;
@@ -6927,7 +7037,7 @@ class AnnotationEditorUIManager {
     for (const editor of this.#editorsToRescale) {
       editor.onScaleChanging();
     }
-    this.currentLayer?.onScaleChanging();
+    this.#currentDrawingSession?.onScaleChanging();
   }
   onRotationChanging({
     pagesRotation
@@ -7419,6 +7529,7 @@ class AnnotationEditorUIManager {
     if (mode === AnnotationEditorType.NONE) {
       this.setEditingState(false);
       this.#disableAll();
+      this._editorUndoBar?.hide();
       this.#updateModeCapability.resolve();
       return;
     }
@@ -7634,7 +7745,7 @@ class AnnotationEditorUIManager {
     });
   }
   setSelected(editor) {
-    this.currentLayer?.commitOrRemove();
+    this.#currentDrawingSession?.commitOrRemove();
     for (const ed of this.#selectedEditors) {
       if (ed !== editor) {
         ed.unselect();
@@ -7674,6 +7785,7 @@ class AnnotationEditorUIManager {
       hasSomethingToRedo: true,
       isEmpty: this.#isEmpty()
     });
+    this._editorUndoBar?.hide();
   }
   redo() {
     this.#commandManager.redo();
@@ -7713,6 +7825,7 @@ class AnnotationEditorUIManager {
     }
     const editors = drawingEditor ? [drawingEditor] : [...this.#selectedEditors];
     const cmd = () => {
+      this._editorUndoBar?.show(undo, editors.length === 1 ? editors[0].editorType : editors.length);
       for (const editor of editors) {
         editor.remove();
       }
@@ -7763,7 +7876,7 @@ class AnnotationEditorUIManager {
         return;
       }
     }
-    if (this.currentLayer?.commitOrRemove()) {
+    if (this.#currentDrawingSession?.commitOrRemove()) {
       return;
     }
     if (!this.hasSelection) {
@@ -8311,7 +8424,7 @@ class AnnotationEditor {
   #focusAC = null;
   #focusedResizerName = "";
   #hasBeenClicked = false;
-  #initialPosition = null;
+  #initialRect = null;
   #isEditing = false;
   #isInEditMode = false;
   #isResizerEnabledForKeyboard = false;
@@ -8546,14 +8659,14 @@ class AnnotationEditor {
     this.#translate(this.parentDimensions, x, y);
   }
   translateInPage(x, y) {
-    this.#initialPosition ||= [this.x, this.y];
+    this.#initialRect ||= [this.x, this.y, this.width, this.height];
     this.#translate(this.pageDimensions, x, y);
     this.div.scrollIntoView({
       block: "nearest"
     });
   }
   drag(tx, ty) {
-    this.#initialPosition ||= [this.x, this.y];
+    this.#initialRect ||= [this.x, this.y, this.width, this.height];
     const {
       div,
       parentDimensions: [parentWidth, parentHeight]
@@ -8590,7 +8703,10 @@ class AnnotationEditor {
   _onTranslating(x, y) {}
   _onTranslated(x, y) {}
   get _hasBeenMoved() {
-    return !!this.#initialPosition && (this.#initialPosition[0] !== this.x || this.#initialPosition[1] !== this.y);
+    return !!this.#initialRect && (this.#initialRect[0] !== this.x || this.#initialRect[1] !== this.y);
+  }
+  get _hasBeenResized() {
+    return !!this.#initialRect && (this.#initialRect[2] !== this.width || this.#initialRect[3] !== this.height);
   }
   getBaseTranslation() {
     const [parentWidth, parentHeight] = this.parentDimensions;
@@ -8946,6 +9062,7 @@ class AnnotationEditor {
     transfOppositePoint = transf(...getOpposite(newWidth, newHeight));
     const newX = oppositeX - transfOppositePoint[0];
     const newY = oppositeY - transfOppositePoint[1];
+    this.#initialRect ||= [this.x, this.y, this.width, this.height];
     this.width = newWidth;
     this.height = newHeight;
     this.x = newX;
@@ -9043,6 +9160,7 @@ class AnnotationEditor {
     const [tx, ty] = this.getInitialTranslation();
     this.translate(tx, ty);
     bindEvents(this, this.div, ["pointerdown"]);
+    this._uiManager._editorUndoBar?.hide();
     return this.div;
   }
   pointerdown(event) {
@@ -9213,6 +9331,19 @@ class AnnotationEditor {
   }
   needsToBeRebuilt() {
     return this.div && !this.isAttachedToDOM;
+  }
+  get isOnScreen() {
+    const {
+      top,
+      left,
+      bottom,
+      right
+    } = this.getClientDimensions();
+    const {
+      innerHeight,
+      innerWidth
+    } = window;
+    return left < innerWidth && right > 0 && top < innerHeight && bottom > 0;
   }
   #addFocusListeners() {
     if (this.#focusAC || !this.div) {
@@ -10728,7 +10859,7 @@ class DOMStandardFontDataFactory extends BaseStandardFontDataFactory {
 if (isNodeJS) {
   let canvas;
   try {
-    const require = process.getBuiltinModule("module").createRequire("file:///home/timvandermeij/Documenten/Ontwikkeling/pdf.js/Code/src/display/node_utils.js");
+    const require = process.getBuiltinModule("module").createRequire(import.meta.url);
     try {
       canvas = require("@napi-rs/canvas");
     } catch (ex) {
@@ -10765,7 +10896,7 @@ async function node_utils_fetchData(url) {
 class NodeFilterFactory extends BaseFilterFactory {}
 class NodeCanvasFactory extends BaseCanvasFactory {
   _createCanvas(width, height) {
-    const require = process.getBuiltinModule("module").createRequire("file:///home/timvandermeij/Documenten/Ontwikkeling/pdf.js/Code/src/display/node_utils.js");
+    const require = process.getBuiltinModule("module").createRequire(import.meta.url);
     const canvas = require("@napi-rs/canvas");
     return canvas.createCanvas(width, height);
   }
@@ -13605,6 +13736,7 @@ class GlobalWorkerOptions {
 ;// ./src/shared/message_handler.js
 
 
+
 const CallbackKind = {
   UNKNOWN: 0,
   DATA: 1,
@@ -13621,6 +13753,7 @@ const StreamKind = {
   PULL_COMPLETE: 7,
   START_COMPLETE: 8
 };
+function onFn() {}
 function wrapReason(reason) {
   if (!(reason instanceof Error || typeof reason === "object" && reason !== null)) {
     unreachable('wrapReason: Expected "reason" to be a (possibly cloned) Error.');
@@ -13690,9 +13823,7 @@ class MessageHandler {
       const sourceName = this.sourceName,
         targetName = data.sourceName,
         comObj = this.comObj;
-      new Promise(function (resolve) {
-        resolve(action(data.data));
-      }).then(function (result) {
+      Promise.try(action, data.data).then(function (result) {
         comObj.postMessage({
           sourceName,
           targetName,
@@ -13865,9 +13996,7 @@ class MessageHandler {
     streamSink.sinkCapability.resolve();
     streamSink.ready = streamSink.sinkCapability.promise;
     this.streamSinks[streamId] = streamSink;
-    new Promise(function (resolve) {
-      resolve(action(data.data, streamSink));
-    }).then(function () {
+    Promise.try(action, data.data, streamSink).then(function () {
       comObj.postMessage({
         sourceName,
         targetName,
@@ -13922,9 +14051,7 @@ class MessageHandler {
           streamSink.sinkCapability.resolve();
         }
         streamSink.desiredSize = data.desiredSize;
-        new Promise(function (resolve) {
-          resolve(streamSink.onPull?.());
-        }).then(function () {
+        Promise.try(streamSink.onPull || onFn).then(function () {
           comObj.postMessage({
             sourceName,
             targetName,
@@ -13975,9 +14102,8 @@ class MessageHandler {
         if (!streamSink) {
           break;
         }
-        new Promise(function (resolve) {
-          resolve(streamSink.onCancel?.(wrapReason(data.reason)));
-        }).then(function () {
+        const dataReason = wrapReason(data.reason);
+        Promise.try(streamSink.onCancel || onFn, dataReason).then(function () {
           comObj.postMessage({
             sourceName,
             targetName,
@@ -13994,7 +14120,7 @@ class MessageHandler {
             reason: wrapReason(reason)
           });
         });
-        streamSink.sinkCapability.reject(wrapReason(data.reason));
+        streamSink.sinkCapability.reject(dataReason);
         streamSink.isCancelled = true;
         delete this.streamSinks[streamId];
         break;
@@ -16223,7 +16349,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "4.9.124",
+    apiVersion: "4.9.155",
     data,
     password,
     disableAutoFetch,
@@ -18020,8 +18146,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "4.9.124";
-const build = "867aaf01f";
+const version = "4.9.155";
+const build = "a4eb8407c";
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.flat-map.js
 var esnext_iterator_flat_map = __webpack_require__(670);
@@ -20564,6 +20690,7 @@ class CaretAnnotationElement extends AnnotationElement {
   }
 }
 class InkAnnotationElement extends AnnotationElement {
+  #polylinesGroupElement = null;
   #polylines = [];
   constructor(parameters) {
     super(parameters, {
@@ -20574,36 +20701,65 @@ class InkAnnotationElement extends AnnotationElement {
     this.svgElementName = "svg:polyline";
     this.annotationEditorType = this.data.it === "InkHighlight" ? AnnotationEditorType.HIGHLIGHT : AnnotationEditorType.INK;
   }
+  #getTransform(rotation, rect) {
+    switch (rotation) {
+      case 90:
+        return {
+          transform: `rotate(90) translate(${-rect[0]},${rect[1]}) scale(1,-1)`,
+          width: rect[3] - rect[1],
+          height: rect[2] - rect[0]
+        };
+      case 180:
+        return {
+          transform: `rotate(180) translate(${-rect[2]},${rect[1]}) scale(1,-1)`,
+          width: rect[2] - rect[0],
+          height: rect[3] - rect[1]
+        };
+      case 270:
+        return {
+          transform: `rotate(270) translate(${-rect[2]},${rect[3]}) scale(1,-1)`,
+          width: rect[3] - rect[1],
+          height: rect[2] - rect[0]
+        };
+      default:
+        return {
+          transform: `translate(${-rect[0]},${rect[3]}) scale(1,-1)`,
+          width: rect[2] - rect[0],
+          height: rect[3] - rect[1]
+        };
+    }
+  }
   render() {
     this.container.classList.add(this.containerClassName);
     const {
       data: {
         rect,
+        rotation,
         inkLists,
         borderStyle,
         popupRef
       }
     } = this;
     const {
+      transform,
       width,
       height
-    } = getRectDims(rect);
+    } = this.#getTransform(rotation, rect);
     const svg = this.svgFactory.create(width, height, true);
-    for (const inkList of inkLists) {
-      let points = [];
-      for (let i = 0, ii = inkList.length; i < ii; i += 2) {
-        const x = inkList[i] - rect[0];
-        const y = rect[3] - inkList[i + 1];
-        points.push(`${x},${y}`);
-      }
-      points = points.join(" ");
+    const g = this.#polylinesGroupElement = this.svgFactory.createElement("svg:g");
+    svg.append(g);
+    g.setAttribute("stroke-width", borderStyle.width || 1);
+    g.setAttribute("stroke-linecap", "round");
+    g.setAttribute("stroke-linejoin", "round");
+    g.setAttribute("stroke-miterlimit", 10);
+    g.setAttribute("stroke", "transparent");
+    g.setAttribute("fill", "transparent");
+    g.setAttribute("transform", transform);
+    for (let i = 0, ii = inkLists.length; i < ii; i++) {
       const polyline = this.svgFactory.createElement(this.svgElementName);
       this.#polylines.push(polyline);
-      polyline.setAttribute("points", points);
-      polyline.setAttribute("stroke-width", borderStyle.width || 1);
-      polyline.setAttribute("stroke", "transparent");
-      polyline.setAttribute("fill", "transparent");
-      svg.append(polyline);
+      polyline.setAttribute("points", inkLists[i].join(","));
+      g.append(polyline);
     }
     if (!popupRef && this.hasPopupData) {
       this._createPopup();
@@ -20611,6 +20767,33 @@ class InkAnnotationElement extends AnnotationElement {
     this.container.append(svg);
     this._editOnDoubleClick();
     return this.container;
+  }
+  updateEdited(params) {
+    super.updateEdited(params);
+    const {
+      thickness,
+      points,
+      rect
+    } = params;
+    const g = this.#polylinesGroupElement;
+    if (thickness >= 0) {
+      g.setAttribute("stroke-width", thickness || 1);
+    }
+    if (points) {
+      for (let i = 0, ii = this.#polylines.length; i < ii; i++) {
+        this.#polylines[i].setAttribute("points", points[i].join(","));
+      }
+    }
+    if (rect) {
+      const {
+        transform,
+        width,
+        height
+      } = this.#getTransform(this.data.rotation, rect);
+      const root = g.parentElement;
+      root.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      g.setAttribute("transform", transform);
+    }
   }
   getElementsToTriggerPopup() {
     return this.#polylines;
@@ -21600,6 +21783,9 @@ class Outline {
       default:
         return [x, y];
     }
+  }
+  static createBezierPoints(x1, y1, x2, y2, x3, y3) {
+    return [(x1 + 5 * x2) / 6, (y1 + 5 * y2) / 6, (5 * x2 + x3) / 6, (5 * y2 + y3) / 6, (x2 + x3) / 2, (y2 + y3) / 2];
   }
 }
 
@@ -23520,7 +23706,9 @@ class DrawingEditor extends AnnotationEditor {
       this.#mustBeCommitted = false;
       this.commit();
       this.parent.setSelected(this);
-      this.div.focus();
+      if (this.isOnScreen) {
+        this.div.focus();
+      }
     }
   }
   remove() {
@@ -23734,6 +23922,7 @@ class DrawingEditor extends AnnotationEditor {
       signal
     });
     parent.toggleDrawing();
+    uiManager._editorUndoBar?.hide();
     if (this._currentDraw) {
       parent.drawLayer.updateProperties(this._currentDrawId, this._currentDraw.startNew(x, y, parentWidth, parentHeight, rotation));
       return;
@@ -23921,7 +24110,7 @@ class InkDrawOutliner {
       this.#line.splice(6, 6);
     }
     this.#last.set([x1, y1, x2, y2, x, y], 0);
-    this.#line.push((x1 + 5 * x2) / 6, (y1 + 5 * y2) / 6, (5 * x2 + x) / 6, (5 * y2 + y) / 6, (x2 + x) / 2, (y2 + y) / 2);
+    this.#line.push(...Outline.createBezierPoints(x1, y1, x2, y2, x, y));
     return {
       path: {
         d: this.toSVGPath()
@@ -24218,6 +24407,30 @@ class InkDrawOutline extends Outline {
         sy = -1 / pageWidth;
         break;
     }
+    if (!lines) {
+      lines = [];
+      for (const point of points) {
+        const len = point.length;
+        if (len === 2) {
+          lines.push(new Float32Array([NaN, NaN, NaN, NaN, point[0], point[1]]));
+          continue;
+        }
+        if (len === 4) {
+          lines.push(new Float32Array([NaN, NaN, NaN, NaN, point[0], point[1], NaN, NaN, NaN, NaN, point[2], point[3]]));
+          continue;
+        }
+        const line = new Float32Array(3 * (len - 2));
+        lines.push(line);
+        let [x1, y1, x2, y2] = point.subarray(0, 4);
+        line.set([NaN, NaN, NaN, NaN, x1, y1], 0);
+        for (let i = 4; i < len; i += 2) {
+          const x = point[i];
+          const y = point[i + 1];
+          line.set(Outline.createBezierPoints(x1, y1, x2, y2, x, y), (i - 2) * 3);
+          [x1, y1, x2, y2] = [x2, y2, x, y];
+        }
+      }
+    }
     for (let i = 0, ii = lines.length; i < ii; i++) {
       newLines.push({
         line: rescaleFn(lines[i].map(x => x ?? NaN), tx, ty, sx, sy),
@@ -24499,6 +24712,8 @@ class InkDrawOutline extends Outline {
 
 
 
+
+
 class InkDrawingOptions extends DrawingOptions {
   #viewParameters;
   constructor(viewerParameters) {
@@ -24560,10 +24775,48 @@ class InkEditor extends DrawingEditor {
     return InkDrawOutline.deserialize(pageX, pageY, pageWidth, pageHeight, innerMargin, data);
   }
   static async deserialize(data, parent, uiManager) {
+    let initialData = null;
     if (data instanceof InkAnnotationElement) {
-      return null;
+      const {
+        data: {
+          inkLists,
+          rect,
+          rotation,
+          id,
+          color,
+          opacity,
+          borderStyle: {
+            rawWidth: thickness
+          },
+          popupRef
+        },
+        parent: {
+          page: {
+            pageNumber
+          }
+        }
+      } = data;
+      initialData = data = {
+        annotationType: AnnotationEditorType.INK,
+        color: Array.from(color),
+        thickness,
+        opacity,
+        paths: {
+          points: inkLists
+        },
+        boxes: null,
+        pageIndex: pageNumber - 1,
+        rect: rect.slice(0),
+        rotation,
+        id,
+        deleted: false,
+        popupRef
+      };
     }
-    return super.deserialize(data, parent, uiManager);
+    const editor = await super.deserialize(data, parent, uiManager);
+    editor.annotationElementId = data.id || null;
+    editor._initialData = initialData;
+    return editor;
   }
   onScaleChanging() {
     if (!this.parent) {
@@ -24631,13 +24884,39 @@ class InkEditor extends DrawingEditor {
       rotation: this.rotation,
       structTreeParentId: this._structTreeParentId
     };
+    if (isForCopying) {
+      return serialized;
+    }
+    if (this.annotationElementId && !this.#hasElementChanged(serialized)) {
+      return null;
+    }
     serialized.id = this.annotationElementId;
     return serialized;
+  }
+  #hasElementChanged(serialized) {
+    const {
+      color,
+      thickness,
+      opacity,
+      pageIndex
+    } = this._initialData;
+    return this._hasBeenMoved || this._hasBeenResized || serialized.color.some((c, i) => c !== color[i]) || serialized.thickness !== thickness || serialized.opacity !== opacity || serialized.pageIndex !== pageIndex;
+  }
+  renderAnnotationElement(annotation) {
+    const {
+      points,
+      rect
+    } = this.serializeDraw(false);
+    annotation.updateEdited({
+      rect,
+      thickness: this._drawingOptions["stroke-width"],
+      points
+    });
+    return null;
   }
 }
 
 ;// ./src/display/editor/stamp.js
-
 
 
 
@@ -25278,17 +25557,15 @@ class StampEditor extends AnnotationEditor {
   }
   #hasElementChanged(serialized) {
     const {
-      rect,
       pageIndex,
       accessibilityData: {
         altText
       }
     } = this._initialData;
-    const isSameRect = serialized.rect.every((x, i) => Math.abs(x - rect[i]) < 1);
     const isSamePageIndex = serialized.pageIndex === pageIndex;
     const isSameAltText = (serialized.accessibilityData?.alt || "") === altText;
     return {
-      isSame: isSameRect && isSamePageIndex && isSameAltText,
+      isSame: !this._hasBeenMoved && !this._hasBeenResized && isSamePageIndex && isSameAltText,
       isSameAltText
     };
   }
@@ -25840,7 +26117,7 @@ class AnnotationEditorLayer {
       this.#currentEditorType.startDrawing(this, this.#uiManager, false, event);
       return;
     }
-    this.#uiManager.unselectAll();
+    this.#uiManager.setCurrentDrawingSession(this);
     this.#drawingAC = new AbortController();
     const signal = this.#uiManager.combinedSignal(this.#drawingAC);
     this.div.addEventListener("blur", ({
@@ -25852,16 +26129,15 @@ class AnnotationEditorLayer {
     }, {
       signal
     });
-    this.#uiManager.disableUserSelect(true);
     this.#currentEditorType.startDrawing(this, this.#uiManager, false, event);
   }
   endDrawingSession(isAborted = false) {
     if (!this.#drawingAC) {
       return null;
     }
+    this.#uiManager.setCurrentDrawingSession(null);
     this.#drawingAC.abort();
     this.#drawingAC = null;
-    this.#uiManager.disableUserSelect(false);
     return this.#currentEditorType.endDrawing(isAborted);
   }
   findNewParent(editor, x, y) {
@@ -26169,8 +26445,8 @@ class DrawLayer {
 
 
 
-const pdfjsVersion = "4.9.124";
-const pdfjsBuild = "867aaf01f";
+const pdfjsVersion = "4.9.155";
+const pdfjsBuild = "a4eb8407c";
 {
   globalThis.pdfjsTestingUtils = {
     HighlightOutliner: HighlightOutliner
