@@ -135,6 +135,8 @@ Renders PDF.js viewer in an iframe but updates UI theme and structure for a neat
         Possible values are `"on-any"`, `"on-phone"`, `"on-tablet"`, `"never"` (case insensitive and dashes can be omitted).
         Note that device features are not detected, instead browser's viewport size is used to decide the UI sizing.
         So if you manually resize the browser window (or emulate a device via browser's F12 dev tools), phone or tablet size can be triggered. (optional, default `"on-any"`)
+    *   `options.debugMode` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** A value indicating whether to show details in text box in the addition to the main message on error dialog.
+        This can be useful for debugging purpose. (optional, default `false`)
     *   `options.events` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The event handlers to register.
         An event handler can be a function or name of the function in string.
         String function name should refer to a valid JavaScript function which is accessible on the host page.
