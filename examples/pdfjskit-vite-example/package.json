@@ -12,6 +12,6 @@
     "vite": "^5.4.8"
   }, 
   "dependencies": {
-    "pdfjskit": "^1.6.1"
+    "pdfjskit": "^1.6.2"
   }  
 }
