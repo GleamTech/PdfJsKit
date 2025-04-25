@@ -54,6 +54,110 @@ Note that the NPM package contains a ES6 module `pdfjskit.min.mjs`, we also prov
 
 - [Using PdfJsKit in plain JS projects with Vite](https://github.com/GleamTech/PdfJsKit/tree/main/examples/pdfjskit-vite-example)
 
+Here is a list of all the options with the default values, that can be passed to the `PdfViewer` constructor (they are already documented in API Docs):
+```js
+{
+  id: "pdfViewer",
+  hidden: false,
+  width: 960,
+  height: 720,
+  border: true,
+  resizable: true,
+  libraryPath: null, //specify PdfJsKit libraryPath e.g. "/PdfJsKit" if not specified directory of current calling script will be used
+  language: "en-US", //L10n will resolve this to "en-US" but for custom translations we use generic culture "en"
+  license: null,
+
+  documentUrl: "",
+  documentData: null,
+  documentPassword: null,
+  documentSize: null,
+
+  zoomMode: "", //unknown (history) starts with "auto"
+  scrollMode: "unknown", //unknown (history) starts with "vertical"
+  spreadMode: "unknown", //unknown (history) starts with "none"
+  sidebarView: "unknown", //unknown (history) starts with "none"
+  cursorTool: "select",
+  rotationMode: "all-pages", //or "current-page" or "currentpage"
+  rememberViewHistory: true, //for each document, remembers page number, zoom level, scroll position, rotation, sidebarView, scrollMode, spreadMode
+
+  toolbarVisible: true,
+  sidebarVisible: true,
+  verticalToolbarVisible: true,
+  toolbarAtBottom: false,
+  theme: "slate, classic-dark", //if multiple values, second is dark mode (auto switched)
+  mobileMode: "on-any", //onPhone, onTablet, never
+  debugMode: false,
+
+  events: {
+    loaded: null,
+    failed: null,
+    documentLoaded: null,
+    pageChanged: null,
+    pageRendered: null,
+    rotationChanged: null,
+    downloading: null,
+    printing: null,
+    printed: null,
+    textSelected: null,
+    textCopied: null,
+  },
+
+  permissions: {
+    viewThumbnails: true,
+    viewOutlines: true,
+    viewAttachments: true,
+    viewLayers: true,
+    navigatePages: true,
+    zoom: true,
+    changeZoomMode: true,
+    find: true,
+    downloadOriginal: false,
+    save: true,
+    print: true,
+    open: true,
+    goFullScreen: true,
+    goPresentationMode: true,
+    viewProperties: true,
+    selectText: true,
+    pan: true,
+    rotate: true,
+    changeScrollMode: true,
+    changeSpreadMode: true,
+
+    viewAnnotations: true,
+    fillForms: true
+  },
+
+  searchOptions: {
+    term: "",
+    matchCase: false,
+    matchDiacritics: false,
+    matchWholeWord: false,
+    matchAnyWord: false,
+    highlightColor: "#FFFF00",
+    activeHighlightColor: "#FFA500",
+    highlightAll: true
+  },
+
+  printOptions: {
+    resolution: 150,
+    autoRotate: true
+  },
+
+  translations: {
+    "en": {
+    "preparing-document": "Preparing document...",
+    "cover-sheet": "Cover Sheet",
+    "rotation-mode": "Rotation Mode",
+    "rotation-mode-title": "Rotation Mode (rotate current page or all pages)",
+    "full-screen": "Full Screen",
+    "download-original": "Download Original",
+    "any-word": "Any Word"
+    }
+  }
+}
+```
+
 ## Documentation
 
 - [Html API Docs](https://gleamtech.github.io/PdfJsKit/dist/docs/)
