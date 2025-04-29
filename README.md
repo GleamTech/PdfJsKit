@@ -146,13 +146,13 @@ Here is a list of all the options with the default values, that can be passed to
 
   translations: {
     "en": {
-    "preparing-document": "Preparing document...",
-    "cover-sheet": "Cover Sheet",
-    "rotation-mode": "Rotation Mode",
-    "rotation-mode-title": "Rotation Mode (rotate current page or all pages)",
-    "full-screen": "Full Screen",
-    "download-original": "Download Original",
-    "any-word": "Any Word"
+      "preparing-document": "Preparing document...",
+      "cover-sheet": "Cover Sheet",
+      "rotation-mode": "Rotation Mode",
+      "rotation-mode-title": "Rotation Mode (rotate current page or all pages)",
+      "full-screen": "Full Screen",
+      "download-original": "Download Original",
+      "any-word": "Any Word"
     }
   }
 }

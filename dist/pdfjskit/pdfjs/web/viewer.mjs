@@ -338,20 +338,6 @@ module.exports = Object.keys || function keys(O) {
 
 /***/ }),
 
-/***/ 1108:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var classof = __webpack_require__(6955);
-
-module.exports = function (it) {
-  var klass = classof(it);
-  return klass === 'BigInt64Array' || klass === 'BigUint64Array';
-};
-
-
-/***/ }),
-
 /***/ 1148:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -1058,42 +1044,6 @@ module.exports = userAgent ? String(userAgent) : '';
 
 /***/ }),
 
-/***/ 2967:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-/* eslint-disable no-proto -- safe */
-var uncurryThisAccessor = __webpack_require__(6706);
-var isObject = __webpack_require__(34);
-var requireObjectCoercible = __webpack_require__(7750);
-var aPossiblePrototype = __webpack_require__(3506);
-
-// `Object.setPrototypeOf` method
-// https://tc39.es/ecma262/#sec-object.setprototypeof
-// Works with __proto__ only. Old v8 can't work with null proto objects.
-// eslint-disable-next-line es/no-object-setprototypeof -- safe
-module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
-  var CORRECT_SETTER = false;
-  var test = {};
-  var setter;
-  try {
-    setter = uncurryThisAccessor(Object.prototype, '__proto__', 'set');
-    setter(test, []);
-    CORRECT_SETTER = test instanceof Array;
-  } catch (error) { /* empty */ }
-  return function setPrototypeOf(O, proto) {
-    requireObjectCoercible(O);
-    aPossiblePrototype(proto);
-    if (!isObject(O)) return O;
-    if (CORRECT_SETTER) setter(O, proto);
-    else O.__proto__ = proto;
-    return O;
-  };
-}() : undefined);
-
-
-/***/ }),
-
 /***/ 3238:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -1163,23 +1113,6 @@ module.exports = function difference(other) {
     if (has(O, e)) remove(result, e);
   });
   return result;
-};
-
-
-/***/ }),
-
-/***/ 3506:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var isPossiblePrototype = __webpack_require__(3925);
-
-var $String = String;
-var $TypeError = TypeError;
-
-module.exports = function (argument) {
-  if (isPossiblePrototype(argument)) return argument;
-  throw new $TypeError("Can't set " + $String(argument) + ' as a prototype');
 };
 
 
@@ -1376,19 +1309,6 @@ var INCORRECT = !setMethodAcceptSetLike('isDisjointFrom', function (result) {
 $({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
   isDisjointFrom: isDisjointFrom
 });
-
-
-/***/ }),
-
-/***/ 3925:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var isObject = __webpack_require__(34);
-
-module.exports = function (argument) {
-  return isObject(argument) || argument === null;
-};
 
 
 /***/ }),
@@ -1839,206 +1759,6 @@ $({ target: 'Promise', stat: true }, {
 
 /***/ }),
 
-/***/ 4644:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var NATIVE_ARRAY_BUFFER = __webpack_require__(7811);
-var DESCRIPTORS = __webpack_require__(3724);
-var globalThis = __webpack_require__(4576);
-var isCallable = __webpack_require__(4901);
-var isObject = __webpack_require__(34);
-var hasOwn = __webpack_require__(9297);
-var classof = __webpack_require__(6955);
-var tryToString = __webpack_require__(6823);
-var createNonEnumerableProperty = __webpack_require__(6699);
-var defineBuiltIn = __webpack_require__(6840);
-var defineBuiltInAccessor = __webpack_require__(2106);
-var isPrototypeOf = __webpack_require__(1625);
-var getPrototypeOf = __webpack_require__(2787);
-var setPrototypeOf = __webpack_require__(2967);
-var wellKnownSymbol = __webpack_require__(8227);
-var uid = __webpack_require__(3392);
-var InternalStateModule = __webpack_require__(1181);
-
-var enforceInternalState = InternalStateModule.enforce;
-var getInternalState = InternalStateModule.get;
-var Int8Array = globalThis.Int8Array;
-var Int8ArrayPrototype = Int8Array && Int8Array.prototype;
-var Uint8ClampedArray = globalThis.Uint8ClampedArray;
-var Uint8ClampedArrayPrototype = Uint8ClampedArray && Uint8ClampedArray.prototype;
-var TypedArray = Int8Array && getPrototypeOf(Int8Array);
-var TypedArrayPrototype = Int8ArrayPrototype && getPrototypeOf(Int8ArrayPrototype);
-var ObjectPrototype = Object.prototype;
-var TypeError = globalThis.TypeError;
-
-var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
-var TYPED_ARRAY_CONSTRUCTOR = 'TypedArrayConstructor';
-// Fixing native typed arrays in Opera Presto crashes the browser, see #595
-var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!setPrototypeOf && classof(globalThis.opera) !== 'Opera';
-var TYPED_ARRAY_TAG_REQUIRED = false;
-var NAME, Constructor, Prototype;
-
-var TypedArrayConstructorsList = {
-  Int8Array: 1,
-  Uint8Array: 1,
-  Uint8ClampedArray: 1,
-  Int16Array: 2,
-  Uint16Array: 2,
-  Int32Array: 4,
-  Uint32Array: 4,
-  Float32Array: 4,
-  Float64Array: 8
-};
-
-var BigIntArrayConstructorsList = {
-  BigInt64Array: 8,
-  BigUint64Array: 8
-};
-
-var isView = function isView(it) {
-  if (!isObject(it)) return false;
-  var klass = classof(it);
-  return klass === 'DataView'
-    || hasOwn(TypedArrayConstructorsList, klass)
-    || hasOwn(BigIntArrayConstructorsList, klass);
-};
-
-var getTypedArrayConstructor = function (it) {
-  var proto = getPrototypeOf(it);
-  if (!isObject(proto)) return;
-  var state = getInternalState(proto);
-  return (state && hasOwn(state, TYPED_ARRAY_CONSTRUCTOR)) ? state[TYPED_ARRAY_CONSTRUCTOR] : getTypedArrayConstructor(proto);
-};
-
-var isTypedArray = function (it) {
-  if (!isObject(it)) return false;
-  var klass = classof(it);
-  return hasOwn(TypedArrayConstructorsList, klass)
-    || hasOwn(BigIntArrayConstructorsList, klass);
-};
-
-var aTypedArray = function (it) {
-  if (isTypedArray(it)) return it;
-  throw new TypeError('Target is not a typed array');
-};
-
-var aTypedArrayConstructor = function (C) {
-  if (isCallable(C) && (!setPrototypeOf || isPrototypeOf(TypedArray, C))) return C;
-  throw new TypeError(tryToString(C) + ' is not a typed array constructor');
-};
-
-var exportTypedArrayMethod = function (KEY, property, forced, options) {
-  if (!DESCRIPTORS) return;
-  if (forced) for (var ARRAY in TypedArrayConstructorsList) {
-    var TypedArrayConstructor = globalThis[ARRAY];
-    if (TypedArrayConstructor && hasOwn(TypedArrayConstructor.prototype, KEY)) try {
-      delete TypedArrayConstructor.prototype[KEY];
-    } catch (error) {
-      // old WebKit bug - some methods are non-configurable
-      try {
-        TypedArrayConstructor.prototype[KEY] = property;
-      } catch (error2) { /* empty */ }
-    }
-  }
-  if (!TypedArrayPrototype[KEY] || forced) {
-    defineBuiltIn(TypedArrayPrototype, KEY, forced ? property
-      : NATIVE_ARRAY_BUFFER_VIEWS && Int8ArrayPrototype[KEY] || property, options);
-  }
-};
-
-var exportTypedArrayStaticMethod = function (KEY, property, forced) {
-  var ARRAY, TypedArrayConstructor;
-  if (!DESCRIPTORS) return;
-  if (setPrototypeOf) {
-    if (forced) for (ARRAY in TypedArrayConstructorsList) {
-      TypedArrayConstructor = globalThis[ARRAY];
-      if (TypedArrayConstructor && hasOwn(TypedArrayConstructor, KEY)) try {
-        delete TypedArrayConstructor[KEY];
-      } catch (error) { /* empty */ }
-    }
-    if (!TypedArray[KEY] || forced) {
-      // V8 ~ Chrome 49-50 `%TypedArray%` methods are non-writable non-configurable
-      try {
-        return defineBuiltIn(TypedArray, KEY, forced ? property : NATIVE_ARRAY_BUFFER_VIEWS && TypedArray[KEY] || property);
-      } catch (error) { /* empty */ }
-    } else return;
-  }
-  for (ARRAY in TypedArrayConstructorsList) {
-    TypedArrayConstructor = globalThis[ARRAY];
-    if (TypedArrayConstructor && (!TypedArrayConstructor[KEY] || forced)) {
-      defineBuiltIn(TypedArrayConstructor, KEY, property);
-    }
-  }
-};
-
-for (NAME in TypedArrayConstructorsList) {
-  Constructor = globalThis[NAME];
-  Prototype = Constructor && Constructor.prototype;
-  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
-  else NATIVE_ARRAY_BUFFER_VIEWS = false;
-}
-
-for (NAME in BigIntArrayConstructorsList) {
-  Constructor = globalThis[NAME];
-  Prototype = Constructor && Constructor.prototype;
-  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
-}
-
-// WebKit bug - typed arrays constructors prototype is Object.prototype
-if (!NATIVE_ARRAY_BUFFER_VIEWS || !isCallable(TypedArray) || TypedArray === Function.prototype) {
-  // eslint-disable-next-line no-shadow -- safe
-  TypedArray = function TypedArray() {
-    throw new TypeError('Incorrect invocation');
-  };
-  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
-    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME], TypedArray);
-  }
-}
-
-if (!NATIVE_ARRAY_BUFFER_VIEWS || !TypedArrayPrototype || TypedArrayPrototype === ObjectPrototype) {
-  TypedArrayPrototype = TypedArray.prototype;
-  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
-    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME].prototype, TypedArrayPrototype);
-  }
-}
-
-// WebKit bug - one more object in Uint8ClampedArray prototype chain
-if (NATIVE_ARRAY_BUFFER_VIEWS && getPrototypeOf(Uint8ClampedArrayPrototype) !== TypedArrayPrototype) {
-  setPrototypeOf(Uint8ClampedArrayPrototype, TypedArrayPrototype);
-}
-
-if (DESCRIPTORS && !hasOwn(TypedArrayPrototype, TO_STRING_TAG)) {
-  TYPED_ARRAY_TAG_REQUIRED = true;
-  defineBuiltInAccessor(TypedArrayPrototype, TO_STRING_TAG, {
-    configurable: true,
-    get: function () {
-      return isObject(this) ? this[TYPED_ARRAY_TAG] : undefined;
-    }
-  });
-  for (NAME in TypedArrayConstructorsList) if (globalThis[NAME]) {
-    createNonEnumerableProperty(globalThis[NAME], TYPED_ARRAY_TAG, NAME);
-  }
-}
-
-module.exports = {
-  NATIVE_ARRAY_BUFFER_VIEWS: NATIVE_ARRAY_BUFFER_VIEWS,
-  TYPED_ARRAY_TAG: TYPED_ARRAY_TAG_REQUIRED && TYPED_ARRAY_TAG,
-  aTypedArray: aTypedArray,
-  aTypedArrayConstructor: aTypedArrayConstructor,
-  exportTypedArrayMethod: exportTypedArrayMethod,
-  exportTypedArrayStaticMethod: exportTypedArrayStaticMethod,
-  getTypedArrayConstructor: getTypedArrayConstructor,
-  isView: isView,
-  isTypedArray: isTypedArray,
-  TypedArray: TypedArray,
-  TypedArrayPrototype: TypedArrayPrototype
-};
-
-
-/***/ }),
-
 /***/ 4659:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -2051,32 +1771,6 @@ module.exports = function (object, key, value) {
   if (DESCRIPTORS) definePropertyModule.f(object, key, createPropertyDescriptor(0, value));
   else object[key] = value;
 };
-
-
-/***/ }),
-
-/***/ 4732:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var ArrayBufferViewCore = __webpack_require__(4644);
-var uncurryThis = __webpack_require__(9504);
-var aCallable = __webpack_require__(9306);
-var arrayFromConstructorAndList = __webpack_require__(5370);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-var sort = uncurryThis(ArrayBufferViewCore.TypedArrayPrototype.sort);
-
-// `%TypedArray%.prototype.toSorted` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.tosorted
-exportTypedArrayMethod('toSorted', function toSorted(compareFn) {
-  if (compareFn !== undefined) aCallable(compareFn);
-  var O = aTypedArray(this);
-  var A = arrayFromConstructorAndList(getTypedArrayConstructor(O), O);
-  return sort(A, compareFn);
-});
 
 
 /***/ }),
@@ -2285,23 +1979,6 @@ module.exports = uncurryThisAccessor(SetHelpers.proto, 'size', 'get') || functio
 
 /***/ }),
 
-/***/ 5370:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-
-module.exports = function (Constructor, list, $length) {
-  var index = 0;
-  var length = arguments.length > 2 ? $length : lengthOfArrayLike(list);
-  var result = new Constructor(length);
-  while (length > index) result[index] = list[index++];
-  return result;
-};
-
-
-/***/ }),
-
 /***/ 5397:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -2428,26 +2105,6 @@ $({ target: 'URL', stat: true, forced: !USE_NATIVE_URL }, {
     }
   }
 });
-
-
-/***/ }),
-
-/***/ 5854:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var toPrimitive = __webpack_require__(2777);
-
-var $TypeError = TypeError;
-
-// `ToBigInt` abstract operation
-// https://tc39.es/ecma262/#sec-tobigint
-module.exports = function (argument) {
-  var prim = toPrimitive(argument, 'number');
-  if (typeof prim == 'number') throw new $TypeError("Can't convert number to bigint");
-  // eslint-disable-next-line es/no-bigint -- safe
-  return BigInt(prim);
-};
 
 
 /***/ }),
@@ -3090,26 +2747,6 @@ module.exports = !fails(function () {
 
 /***/ }),
 
-/***/ 7467:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var arrayToReversed = __webpack_require__(7628);
-var ArrayBufferViewCore = __webpack_require__(4644);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-
-// `%TypedArray%.prototype.toReversed` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.toreversed
-exportTypedArrayMethod('toReversed', function toReversed() {
-  return arrayToReversed(aTypedArray(this), getTypedArrayConstructor(this));
-});
-
-
-/***/ }),
-
 /***/ 7476:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -3185,25 +2822,6 @@ $({ target: 'Iterator', proto: true, real: true }, {
     }, { IS_RECORD: true });
   }
 });
-
-
-/***/ }),
-
-/***/ 7628:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-
-// https://tc39.es/proposal-change-array-by-copy/#sec-array.prototype.toReversed
-// https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.toReversed
-module.exports = function (O, C) {
-  var len = lengthOfArrayLike(O);
-  var A = new C(len);
-  var k = 0;
-  for (; k < len; k++) A[k] = O[len - k - 1];
-  return A;
-};
 
 
 /***/ }),
@@ -4438,43 +4056,6 @@ module.exports = NATIVE_BIND ? call.bind(call) : function () {
 
 /***/ }),
 
-/***/ 9577:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var arrayWith = __webpack_require__(9928);
-var ArrayBufferViewCore = __webpack_require__(4644);
-var isBigIntArray = __webpack_require__(1108);
-var toIntegerOrInfinity = __webpack_require__(1291);
-var toBigInt = __webpack_require__(5854);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-
-var PROPER_ORDER = !!function () {
-  try {
-    // eslint-disable-next-line no-throw-literal, es/no-typed-arrays, es/no-array-prototype-with -- required for testing
-    new Int8Array(1)['with'](2, { valueOf: function () { throw 8; } });
-  } catch (error) {
-    // some early implementations, like WebKit, does not follow the final semantic
-    // https://github.com/tc39/proposal-change-array-by-copy/pull/86
-    return error === 8;
-  }
-}();
-
-// `%TypedArray%.prototype.with` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.with
-exportTypedArrayMethod('with', { 'with': function (index, value) {
-  var O = aTypedArray(this);
-  var relativeIndex = toIntegerOrInfinity(index);
-  var actualValue = isBigIntArray(O) ? toBigInt(value) : +value;
-  return arrayWith(O, getTypedArrayConstructor(O), relativeIndex, actualValue);
-} }['with'], !PROPER_ORDER);
-
-
-/***/ }),
-
 /***/ 9617:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -4514,31 +4095,6 @@ module.exports = {
 };
 
 
-/***/ }),
-
-/***/ 9928:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-var toIntegerOrInfinity = __webpack_require__(1291);
-
-var $RangeError = RangeError;
-
-// https://tc39.es/proposal-change-array-by-copy/#sec-array.prototype.with
-// https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.with
-module.exports = function (O, C, index, value) {
-  var len = lengthOfArrayLike(O);
-  var relativeIndex = toIntegerOrInfinity(index);
-  var actualIndex = relativeIndex < 0 ? len + relativeIndex : relativeIndex;
-  if (actualIndex >= len || actualIndex < 0) throw new $RangeError('Incorrect index');
-  var A = new C(len);
-  var k = 0;
-  for (; k < len; k++) A[k] = k === actualIndex ? value : O[k];
-  return A;
-};
-
-
 /***/ })
 
 /******/ });
@@ -4568,32 +4124,7 @@ module.exports = function (O, C, index, value) {
 /******/ }
 /******/ 
 /************************************************************************/
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__webpack_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/************************************************************************/
 var __webpack_exports__ = {};
-
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  PDFViewerApplication: () => (/* reexport */ PDFViewerApplication),
-  PDFViewerApplicationConstants: () => (/* binding */ AppConstants),
-  PDFViewerApplicationOptions: () => (/* reexport */ AppOptions)
-});
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
 var es_array_push = __webpack_require__(4114);
@@ -4665,6 +4196,7 @@ const {
   SupportedImageMimeTypes,
   TextLayer,
   TouchManager,
+  updateUrlHash,
   Util,
   VerbosityLevel,
   version,
@@ -5247,6 +4779,10 @@ const defaultOptions = {
     kind: OptionKind.BROWSER
   },
   supportsPinchToZoom: {
+    value: true,
+    kind: OptionKind.BROWSER
+  },
+  supportsPrinting: {
     value: true,
     kind: OptionKind.BROWSER
   },
@@ -6154,28 +5690,77 @@ class FluentNumber extends FluentType {
     this.opts = opts;
   }
   toString(scope) {
-    try {
-      const nf = scope.memoizeIntlObject(Intl.NumberFormat, this.opts);
-      return nf.format(this.value);
-    } catch (err) {
-      scope.reportError(err);
-      return this.value.toString(10);
+    if (scope) {
+      try {
+        const nf = scope.memoizeIntlObject(Intl.NumberFormat, this.opts);
+        return nf.format(this.value);
+      } catch (err) {
+        scope.reportError(err);
+      }
     }
+    return this.value.toString(10);
   }
 }
 class FluentDateTime extends FluentType {
+  static supportsValue(value) {
+    if (typeof value === "number") return true;
+    if (value instanceof Date) return true;
+    if (value instanceof FluentType) return FluentDateTime.supportsValue(value.valueOf());
+    if ("Temporal" in globalThis) {
+      const _Temporal = globalThis.Temporal;
+      if (value instanceof _Temporal.Instant || value instanceof _Temporal.PlainDateTime || value instanceof _Temporal.PlainDate || value instanceof _Temporal.PlainMonthDay || value instanceof _Temporal.PlainTime || value instanceof _Temporal.PlainYearMonth) {
+        return true;
+      }
+    }
+    return false;
+  }
   constructor(value, opts = {}) {
+    if (value instanceof FluentDateTime) {
+      opts = {
+        ...value.opts,
+        ...opts
+      };
+      value = value.value;
+    } else if (value instanceof FluentType) {
+      value = value.valueOf();
+    }
+    if (typeof value === "object" && "calendarId" in value && opts.calendar === undefined) {
+      opts = {
+        ...opts,
+        calendar: value.calendarId
+      };
+    }
     super(value);
     this.opts = opts;
   }
+  [Symbol.toPrimitive](hint) {
+    return hint === "string" ? this.toString() : this.toNumber();
+  }
+  toNumber() {
+    const value = this.value;
+    if (typeof value === "number") return value;
+    if (value instanceof Date) return value.getTime();
+    if ("epochMilliseconds" in value) {
+      return value.epochMilliseconds;
+    }
+    if ("toZonedDateTime" in value) {
+      return value.toZonedDateTime("UTC").epochMilliseconds;
+    }
+    throw new TypeError("Unwrapping a non-number value as a number");
+  }
   toString(scope) {
-    try {
-      const dtf = scope.memoizeIntlObject(Intl.DateTimeFormat, this.opts);
-      return dtf.format(this.value);
-    } catch (err) {
-      scope.reportError(err);
+    if (scope) {
+      try {
+        const dtf = scope.memoizeIntlObject(Intl.DateTimeFormat, this.opts);
+        return dtf.format(this.value);
+      } catch (err) {
+        scope.reportError(err);
+      }
+    }
+    if (typeof this.value === "number" || this.value instanceof Date) {
       return new Date(this.value).toISOString();
     }
+    return this.value.toString();
   }
 }
 ;// ./node_modules/@fluent/bundle/esm/resolver.js
@@ -6268,8 +5853,8 @@ function resolveVariableReference(scope, {
     case "number":
       return new FluentNumber(arg);
     case "object":
-      if (arg instanceof Date) {
-        return new FluentDateTime(arg.getTime());
+      if (FluentDateTime.supportsValue(arg)) {
+        return new FluentDateTime(arg);
       }
     default:
       scope.reportError(new TypeError(`Variable type not supported: $${name}, ${typeof arg}`));
@@ -6453,7 +6038,7 @@ function NUMBER(args, opts) {
     });
   }
   if (arg instanceof FluentDateTime) {
-    return new FluentNumber(arg.valueOf(), {
+    return new FluentNumber(arg.toNumber(), {
       ...values(opts, NUMBER_ALLOWED)
     });
   }
@@ -6465,16 +6050,8 @@ function DATETIME(args, opts) {
   if (arg instanceof FluentNone) {
     return new FluentNone(`DATETIME(${arg.valueOf()})`);
   }
-  if (arg instanceof FluentDateTime) {
-    return new FluentDateTime(arg.valueOf(), {
-      ...arg.opts,
-      ...values(opts, DATETIME_ALLOWED)
-    });
-  }
-  if (arg instanceof FluentNumber) {
-    return new FluentDateTime(arg.valueOf(), {
-      ...values(opts, DATETIME_ALLOWED)
-    });
+  if (arg instanceof FluentDateTime || arg instanceof FluentNumber) {
+    return new FluentDateTime(arg, values(opts, DATETIME_ALLOWED));
   }
   throw new TypeError("Invalid argument to DATETIME");
 }
@@ -7706,7 +7283,7 @@ class genericl10n_GenericL10n extends L10n {
 
 async function docProperties(pdfDocument) {
   const url = "",
-    baseUrl = url.split("#", 1)[0];
+    baseUrl = "";
   const {
     info,
     metadata,
@@ -7763,7 +7340,7 @@ class SignatureStorage {
     this.#signal = signal;
   }
   #save() {
-    localStorage.setItem(KEY_STORAGE, JSON.stringify(Object.fromEntries(this.#signatures.entries())));
+    localStorage.setItem(KEY_STORAGE, JSON.stringify(Object.fromEntries(this.#signatures)));
   }
   async getAll() {
     if (this.#signal) {
@@ -9884,12 +9461,6 @@ var es_array_buffer_detached = __webpack_require__(6573);
 var es_array_buffer_transfer = __webpack_require__(8100);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array-buffer.transfer-to-fixed-length.js
 var es_array_buffer_transfer_to_fixed_length = __webpack_require__(7936);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.to-reversed.js
-var es_typed_array_to_reversed = __webpack_require__(7467);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.to-sorted.js
-var es_typed_array_to_sorted = __webpack_require__(4732);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.with.js
-var es_typed_array_with = __webpack_require__(9577);
 ;// ./web/pdf_find_utils.js
 
 const CharacterType = {
@@ -9966,9 +9537,6 @@ function getNormalizeWithNFKC() {
 }
 
 ;// ./web/pdf_find_controller.js
-
-
-
 
 
 
@@ -10439,6 +10007,9 @@ class PDFFindController {
     return [isUnicode, query];
   }
   #calculateMatch(pageIndex) {
+    if (!this.#state) {
+      return;
+    }
     const query = this.#query;
     if (query.length === 0) {
       return;
@@ -10517,29 +10088,36 @@ class PDFFindController {
     const textOptions = {
       disableNormalization: true
     };
+    const pdfDoc = this._pdfDocument;
     for (let i = 0, ii = this._linkService.pagesCount; i < ii; i++) {
       const {
         promise,
         resolve
       } = Promise.withResolvers();
       this._extractTextPromises[i] = promise;
-      deferred = deferred.then(() => this._pdfDocument.getPage(i + 1).then(pdfPage => pdfPage.getTextContent(textOptions)).then(textContent => {
-        const strBuf = [];
-        for (const textItem of textContent.items) {
-          strBuf.push(textItem.str);
-          if (textItem.hasEOL) {
-            strBuf.push("\n");
-          }
+      deferred = deferred.then(async () => {
+        if (pdfDoc !== this._pdfDocument) {
+          resolve();
+          return;
         }
-        [this._pageContents[i], this._pageDiffs[i], this._hasDiacritics[i]] = normalize(strBuf.join(""));
-        resolve();
-      }, reason => {
-        console.error(`Unable to get text content for page ${i + 1}`, reason);
-        this._pageContents[i] = "";
-        this._pageDiffs[i] = null;
-        this._hasDiacritics[i] = false;
-        resolve();
-      }));
+        await pdfDoc.getPage(i + 1).then(pdfPage => pdfPage.getTextContent(textOptions)).then(textContent => {
+          const strBuf = [];
+          for (const textItem of textContent.items) {
+            strBuf.push(textItem.str);
+            if (textItem.hasEOL) {
+              strBuf.push("\n");
+            }
+          }
+          [this._pageContents[i], this._pageDiffs[i], this._hasDiacritics[i]] = normalize(strBuf.join(""));
+          resolve();
+        }, reason => {
+          console.error(`Unable to get text content for page ${i + 1}`, reason);
+          this._pageContents[i] = "";
+          this._pageDiffs[i] = null;
+          this._hasDiacritics[i] = false;
+          resolve();
+        });
+      });
     }
   }
   #updatePage(index) {
@@ -10901,6 +10479,7 @@ class PDFFindBar {
 ;// ./web/pdf_history.js
 
 
+
 const HASH_CHANGE_TIMEOUT = 1000;
 const POSITION_UPDATED_THRESHOLD = 50;
 const UPDATE_VIEWAREA_TIMEOUT = 1000;
@@ -11113,9 +10692,12 @@ class PDFHistory {
     this.#updateInternalState(destination, newState.uid);
     let newUrl;
     if (this._updateUrl && destination?.hash) {
-      const baseUrl = document.location.href.split("#", 1)[0];
-      if (!baseUrl.startsWith("file://")) {
-        newUrl = `${baseUrl}#${destination.hash}`;
+      const {
+        href,
+        protocol
+      } = document.location;
+      if (protocol !== "file:") {
+        newUrl = updateUrlHash(href, destination.hash);
       }
     }
     if (shouldReplace) {
@@ -12185,7 +11767,10 @@ function getXfaHtmlForPrinting(printContainer, pdfDocument) {
     const viewport = getXfaPageViewport(xfaPage, {
       scale
     });
-    builder.render(viewport, "print");
+    builder.render({
+      viewport,
+      intent: "print"
+    });
     page.append(builder.div);
   }
 }
@@ -15405,6 +14990,14 @@ class TextLayerBuilder {
       if (anchor.nodeType === Node.TEXT_NODE) {
         anchor = anchor.parentNode;
       }
+      if (!modifyStart && range.endOffset === 0) {
+        do {
+          while (!anchor.previousSibling) {
+            anchor = anchor.parentNode;
+          }
+          anchor = anchor.previousSibling;
+        } while (!anchor.childNodes.length);
+      }
       const parentTextLayer = anchor.parentElement?.closest(".textLayer");
       const endDiv = this.#textLayers.get(parentTextLayer);
       if (endDiv) {
@@ -16303,7 +15896,7 @@ class PDFViewer {
   #supportsPinchToZoom = true;
   #textLayerMode = TextLayerMode.ENABLE;
   constructor(options) {
-    const viewerVersion = "5.1.91";
+    const viewerVersion = "5.2.133";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -17721,7 +17314,7 @@ class PDFViewer {
         newScale = round((newScale * delta).toFixed(2) * 10) / 10;
       } while (--steps > 0);
     }
-    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+    newScale = MathClamp(newScale, MIN_SCALE, MAX_SCALE);
     this.#setScale(newScale, {
       noScroll: false,
       drawingDelay,
@@ -19527,14 +19120,14 @@ const PDFViewerApplication = {
     let mode;
     switch (AppOptions.get("viewerCssTheme")) {
       case 1:
-        mode = "is-light";
+        mode = "light";
         break;
       case 2:
-        mode = "is-dark";
+        mode = "dark";
         break;
     }
     if (mode) {
-      document.documentElement.classList.add(mode);
+      docStyle.setProperty("color-scheme", mode);
     }
     this.l10n = await this.externalServices.createL10n();
     document.getElementsByTagName("html")[0].dir = this.l10n.getDirection();
@@ -19959,7 +19552,7 @@ const PDFViewerApplication = {
     this.pdfViewer.currentPageNumber = val;
   },
   get supportsPrinting() {
-    return PDFPrintServiceFactory.supportsPrinting;
+    return shadow(this, "supportsPrinting", AppOptions.get("supportsPrinting") && PDFPrintServiceFactory.supportsPrinting);
   },
   get supportsFullscreen() {
     return shadow(this, "supportsFullscreen", document.fullscreenEnabled);
@@ -19990,9 +19583,9 @@ const PDFViewerApplication = {
   },
   setTitleUsingUrl(url = "", downloadUrl = null) {
     this.url = url;
-    this.baseUrl = url.split("#", 1)[0];
+    this.baseUrl = updateUrlHash(url, "", true);
     if (downloadUrl) {
-      this._downloadUrl = downloadUrl === url ? this.baseUrl : downloadUrl.split("#", 1)[0];
+      this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);
     }
     if (isDataScheme(url)) {
       this._hideViewBookmark();
@@ -21467,8 +21060,8 @@ function beforeUnload(evt) {
 
 
 
-const pdfjsVersion = "5.1.91";
-const pdfjsBuild = "45cbe8bb0";
+const pdfjsVersion = "5.2.133";
+const pdfjsBuild = "4f7761353";
 const AppConstants = {
   LinkTarget: LinkTarget,
   RenderingStates: RenderingStates,
@@ -21699,9 +21292,6 @@ if (document.readyState === "interactive" || document.readyState === "complete")
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
 
-var __webpack_exports__PDFViewerApplication = __webpack_exports__.PDFViewerApplication;
-var __webpack_exports__PDFViewerApplicationConstants = __webpack_exports__.PDFViewerApplicationConstants;
-var __webpack_exports__PDFViewerApplicationOptions = __webpack_exports__.PDFViewerApplicationOptions;
-export { __webpack_exports__PDFViewerApplication as PDFViewerApplication, __webpack_exports__PDFViewerApplicationConstants as PDFViewerApplicationConstants, __webpack_exports__PDFViewerApplicationOptions as PDFViewerApplicationOptions };
+export { PDFViewerApplication, AppConstants as PDFViewerApplicationConstants, AppOptions as PDFViewerApplicationOptions };
 
 //# sourceMappingURL=viewer.mjs.map

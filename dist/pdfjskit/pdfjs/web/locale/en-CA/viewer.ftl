@@ -328,8 +328,6 @@ pdfjs-editor-highlight-editor =
 # “Drawing” is a noun, the string is used on the editor for drawings.
 pdfjs-editor-ink-editor =
     .aria-label = Drawing editor
-pdfjs-editor-signature-editor =
-    .aria-label = Signature editor
 pdfjs-editor-stamp-editor =
     .aria-label = Image editor
 
@@ -481,7 +479,6 @@ pdfjs-editor-new-alt-text-error-close-button = Close
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)
     .aria-valuetext = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -600,9 +597,6 @@ pdfjs-editor-edit-signature-update-button = Update
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Remove signature
-pdfjs-editor-delete-signature-button-label = Remove signature
 pdfjs-editor-delete-signature-button1 =
     .title = Remove saved signature
 pdfjs-editor-delete-signature-button-label1 = Remove saved signature
