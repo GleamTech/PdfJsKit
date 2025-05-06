@@ -125,6 +125,7 @@ Here is a list of all the options with the default values, that can be passed to
     changeSpreadMode: true,
 
     viewAnnotations: true,
+    editAnnotations: true,
     fillForms: true
   },
 
