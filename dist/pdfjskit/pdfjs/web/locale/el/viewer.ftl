@@ -88,7 +88,7 @@ pdfjs-scroll-wrapped-button =
     .title = Χρήση κυκλικής κύλισης
 pdfjs-scroll-wrapped-button-label = Κυκλική κύλιση
 pdfjs-spread-none-button =
-    .title = Να μη γίνει σύνδεση επεκτάσεων σελίδων
+    .title = Να μην γίνει σύνδεση των επεκτάσεων σελίδων
 pdfjs-spread-none-button-label = Χωρίς επεκτάσεις
 pdfjs-spread-odd-button =
     .title = Σύνδεση επεκτάσεων σελίδων ξεκινώντας από τις μονές σελίδες
@@ -270,7 +270,7 @@ pdfjs-page-landmark =
 pdfjs-loading-error = Προέκυψε σφάλμα κατά τη φόρτωση του PDF.
 pdfjs-invalid-file-error = Μη έγκυρο ή κατεστραμμένο αρχείο PDF.
 pdfjs-missing-file-error = Λείπει αρχείο PDF.
-pdfjs-unexpected-response-error = Μη αναμενόμενη απόκριση από το διακομιστή.
+pdfjs-unexpected-response-error = Απρόσμενη απάντηση διακομιστή.
 pdfjs-rendering-error = Προέκυψε σφάλμα κατά την εμφάνιση της σελίδας.
 
 ## Annotations

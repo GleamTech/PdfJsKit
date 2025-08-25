@@ -20,6 +20,10 @@
  * JavaScript code in this page
  */
 
+/**
+ * pdfjsVersion = 5.4.54
+ * pdfjsBuild = 295fb3ec4
+ */
 /******/ var __webpack_modules__ = ({
 
 /***/ 34:
@@ -61,17 +65,29 @@ module.exports = function (argument, usingIterator) {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var findWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('find', TypeError);
 
 // `Iterator.prototype.find` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.find
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: findWithoutClosingOnEarlyError }, {
   find: function find(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (findWithoutClosingOnEarlyError) return call(findWithoutClosingOnEarlyError, this, predicate);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     return iterate(record, function (value, stop) {
@@ -222,6 +238,15 @@ var getIteratorFlattenable = __webpack_require__(8646);
 var createIteratorProxy = __webpack_require__(9462);
 var iteratorClose = __webpack_require__(9539);
 var IS_PURE = __webpack_require__(6395);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE
+  && !iteratorHelperThrowsOnInvalidIterator('flatMap', function () { /* empty */ });
+var flatMapWithoutClosingOnEarlyError = !IS_PURE && !FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('flatMap', TypeError);
+
+var FORCED = IS_PURE || FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR || flatMapWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -247,10 +272,17 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.flatMap` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.flatmap
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   flatMap: function flatMap(mapper) {
     anObject(this);
-    aCallable(mapper);
+    try {
+      aCallable(mapper);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (flatMapWithoutClosingOnEarlyError) return call(flatMapWithoutClosingOnEarlyError, this, mapper);
+
     return new IteratorProxy(getIteratorDirect(this), {
       mapper: mapper,
       inner: null
@@ -309,32 +341,20 @@ module.exports = function (it, Prototype) {
 
 /***/ }),
 
-/***/ 713:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ 684:
+/***/ ((module) => {
 
 
-var call = __webpack_require__(9565);
-var aCallable = __webpack_require__(9306);
-var anObject = __webpack_require__(8551);
-var getIteratorDirect = __webpack_require__(1767);
-var createIteratorProxy = __webpack_require__(9462);
-var callWithSafeIterationClosing = __webpack_require__(6319);
-
-var IteratorProxy = createIteratorProxy(function () {
-  var iterator = this.iterator;
-  var result = anObject(call(this.next, iterator));
-  var done = this.done = !!result.done;
-  if (!done) return callWithSafeIterationClosing(iterator, this.mapper, [result.value, this.counter++], true);
-});
-
-// `Iterator.prototype.map` method
-// https://github.com/tc39/proposal-iterator-helpers
-module.exports = function map(mapper) {
-  anObject(this);
-  aCallable(mapper);
-  return new IteratorProxy(getIteratorDirect(this), {
-    mapper: mapper
-  });
+// Should throw an error on invalid iterator
+// https://issues.chromium.org/issues/336839115
+module.exports = function (methodName, argument) {
+  // eslint-disable-next-line es/no-iterator -- required for testing
+  var method = typeof Iterator == 'function' && Iterator.prototype[methodName];
+  if (method) try {
+    method.call({ next: null }, argument).next();
+  } catch (error) {
+    return true;
+  }
 };
 
 
@@ -447,22 +467,48 @@ module.exports = function (exec) {
 
 /***/ }),
 
+/***/ 1108:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var classof = __webpack_require__(6955);
+
+module.exports = function (it) {
+  var klass = classof(it);
+  return klass === 'BigInt64Array' || klass === 'BigUint64Array';
+};
+
+
+/***/ }),
+
 /***/ 1148:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var everyWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('every', TypeError);
 
 // `Iterator.prototype.every` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.every
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: everyWithoutClosingOnEarlyError }, {
   every: function every(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (everyWithoutClosingOnEarlyError) return call(everyWithoutClosingOnEarlyError, this, predicate);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     return !iterate(record, function (value, stop) {
@@ -569,6 +615,29 @@ module.exports = function (argument) {
 
 /***/ }),
 
+/***/ 1385:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var iteratorClose = __webpack_require__(9539);
+
+module.exports = function (iters, kind, value) {
+  for (var i = iters.length - 1; i >= 0; i--) {
+    if (iters[i] === undefined) continue;
+    try {
+      value = iteratorClose(iters[i].iterator, kind, value);
+    } catch (error) {
+      kind = 'throw';
+      value = error;
+    }
+  }
+  if (kind === 'throw') throw value;
+  return value;
+};
+
+
+/***/ }),
+
 /***/ 1548:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -603,9 +672,22 @@ var anUint8Array = __webpack_require__(4154);
 
 var Uint8Array = globalThis.Uint8Array;
 
+var INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS = !Uint8Array || !Uint8Array.prototype.setFromBase64 || !function () {
+  var target = new Uint8Array([255, 255, 255, 255, 255]);
+  try {
+    target.setFromBase64('', null);
+    return;
+  } catch (error) { /* empty */ }
+  try {
+    target.setFromBase64('MjYyZg===');
+  } catch (error) {
+    return target[0] === 50 && target[1] === 54 && target[2] === 50 && target[3] === 255 && target[4] === 255;
+  }
+}();
+
 // `Uint8Array.prototype.setFromBase64` method
 // https://github.com/tc39/proposal-arraybuffer-base64
-if (Uint8Array) $({ target: 'Uint8Array', proto: true }, {
+if (Uint8Array) $({ target: 'Uint8Array', proto: true, forced: INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS }, {
   setFromBase64: function setFromBase64(string /* , options */) {
     anUint8Array(this);
 
@@ -675,11 +757,14 @@ $({ target: 'Promise', stat: true, forced: FORCED }, {
 
 var $ = __webpack_require__(6518);
 var union = __webpack_require__(4204);
+var setMethodGetKeysBeforeCloning = __webpack_require__(9835);
 var setMethodAcceptSetLike = __webpack_require__(4916);
+
+var FORCED = !setMethodAcceptSetLike('union') || !setMethodGetKeysBeforeCloning('union');
 
 // `Set.prototype.union` method
 // https://tc39.es/ecma262/#sec-set.prototype.union
-$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('union') }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   union: union
 });
 
@@ -691,13 +776,47 @@ $({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('uni
 
 
 var $ = __webpack_require__(6518);
-var map = __webpack_require__(713);
+var call = __webpack_require__(9565);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+var createIteratorProxy = __webpack_require__(9462);
+var callWithSafeIterationClosing = __webpack_require__(6319);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 var IS_PURE = __webpack_require__(6395);
+
+var MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE && !iteratorHelperThrowsOnInvalidIterator('map', function () { /* empty */ });
+var mapWithoutClosingOnEarlyError = !IS_PURE && !MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('map', TypeError);
+
+var FORCED = IS_PURE || MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR || mapWithoutClosingOnEarlyError;
+
+var IteratorProxy = createIteratorProxy(function () {
+  var iterator = this.iterator;
+  var result = anObject(call(this.next, iterator));
+  var done = this.done = !!result.done;
+  if (!done) return callWithSafeIterationClosing(iterator, this.mapper, [result.value, this.counter++], true);
+});
 
 // `Iterator.prototype.map` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.map
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
-  map: map
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
+  map: function map(mapper) {
+    anObject(this);
+    try {
+      aCallable(mapper);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (mapWithoutClosingOnEarlyError) return call(mapWithoutClosingOnEarlyError, this, mapper);
+
+    return new IteratorProxy(getIteratorDirect(this), {
+      mapper: mapper
+    });
+  }
 });
 
 
@@ -708,7 +827,7 @@ $({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
 
 
 // `GetIteratorDirect(obj)` abstract operation
-// https://tc39.es/proposal-iterator-helpers/#sec-getiteratordirect
+// https://tc39.es/ecma262/#sec-getiteratordirect
 module.exports = function (obj) {
   return {
     iterator: obj,
@@ -994,6 +1113,15 @@ var getIteratorDirect = __webpack_require__(1767);
 var createIteratorProxy = __webpack_require__(9462);
 var callWithSafeIterationClosing = __webpack_require__(6319);
 var IS_PURE = __webpack_require__(6395);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE && !iteratorHelperThrowsOnInvalidIterator('filter', function () { /* empty */ });
+var filterWithoutClosingOnEarlyError = !IS_PURE && !FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('filter', TypeError);
+
+var FORCED = IS_PURE || FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR || filterWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -1011,10 +1139,17 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.filter` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.filter
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   filter: function filter(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (filterWithoutClosingOnEarlyError) return call(filterWithoutClosingOnEarlyError, this, predicate);
+
     return new IteratorProxy(getIteratorDirect(this), {
       predicate: predicate
     });
@@ -1084,7 +1219,7 @@ module.exports = function (iterable, unboundFunction, options) {
   var iterator, iterFn, index, length, result, next, step;
 
   var stop = function (condition) {
-    if (iterator) iteratorClose(iterator, 'normal', condition);
+    if (iterator) iteratorClose(iterator, 'normal');
     return new Result(true, condition);
   };
 
@@ -1366,7 +1501,7 @@ var uncurryThis = __webpack_require__(9504);
 
 var id = 0;
 var postfix = Math.random();
-var toString = uncurryThis(1.0.toString);
+var toString = uncurryThis(1.1.toString);
 
 module.exports = function (key) {
   return 'Symbol(' + (key === undefined ? '' : key) + ')_' + toString(++id + postfix, 36);
@@ -1391,7 +1526,7 @@ var has = SetHelpers.has;
 var remove = SetHelpers.remove;
 
 // `Set.prototype.difference` method
-// https://github.com/tc39/proposal-set-methods
+// https://tc39.es/ecma262/#sec-set.prototype.difference
 module.exports = function difference(other) {
   var O = aSet(this);
   var otherRec = getSetRecord(other);
@@ -1400,7 +1535,7 @@ module.exports = function difference(other) {
     if (otherRec.includes(e)) remove(result, e);
   });
   else iterateSimple(otherRec.getIterator(), function (e) {
-    if (has(O, e)) remove(result, e);
+    if (has(result, e)) remove(result, e);
   });
   return result;
 };
@@ -1444,17 +1579,29 @@ module.exports = function (argument) {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var someWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('some', TypeError);
 
 // `Iterator.prototype.some` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.some
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: someWithoutClosingOnEarlyError }, {
   some: function some(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (someWithoutClosingOnEarlyError) return call(someWithoutClosingOnEarlyError, this, predicate);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     return iterate(record, function (value, stop) {
@@ -1529,7 +1676,7 @@ var has = SetHelpers.has;
 var remove = SetHelpers.remove;
 
 // `Set.prototype.symmetricDifference` method
-// https://github.com/tc39/proposal-set-methods
+// https://tc39.es/ecma262/#sec-set.prototype.symmetricdifference
 module.exports = function symmetricDifference(other) {
   var O = aSet(this);
   var keysIter = getSetRecord(other).getIterator();
@@ -1648,7 +1795,7 @@ var iterate = __webpack_require__(8469);
 var getSetRecord = __webpack_require__(3789);
 
 // `Set.prototype.isSubsetOf` method
-// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSubsetOf
+// https://tc39.es/ecma262/#sec-set.prototype.issubsetof
 module.exports = function isSubsetOf(other) {
   var O = aSet(this);
   var otherRec = getSetRecord(other);
@@ -1821,7 +1968,7 @@ var getSetRecord = __webpack_require__(3789);
 var iterateSimple = __webpack_require__(507);
 
 // `Set.prototype.union` method
-// https://github.com/tc39/proposal-set-methods
+// https://tc39.es/ecma262/#sec-set.prototype.union
 module.exports = function union(other) {
   var O = aSet(this);
   var keysIter = getSetRecord(other).getIterator();
@@ -1877,6 +2024,164 @@ module.exports = (function () {
   if (globalThis.window && globalThis.document) return 'BROWSER';
   return 'REST';
 })();
+
+
+/***/ }),
+
+/***/ 4235:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+// based on Shewchuk's algorithm for exactly floating point addition
+// adapted from https://github.com/tc39/proposal-math-sum/blob/3513d58323a1ae25560e8700aa5294500c6c9287/polyfill/polyfill.mjs
+var $ = __webpack_require__(6518);
+var uncurryThis = __webpack_require__(9504);
+var iterate = __webpack_require__(2652);
+
+var $RangeError = RangeError;
+var $TypeError = TypeError;
+var $Infinity = Infinity;
+var $NaN = NaN;
+var abs = Math.abs;
+var pow = Math.pow;
+var push = uncurryThis([].push);
+
+var POW_2_1023 = pow(2, 1023);
+var MAX_SAFE_INTEGER = pow(2, 53) - 1; // 2 ** 53 - 1 === 9007199254740992
+var MAX_DOUBLE = Number.MAX_VALUE; // 2 ** 1024 - 2 ** (1023 - 52) === 1.79769313486231570815e+308
+var MAX_ULP = pow(2, 971); // 2 ** (1023 - 52) === 1.99584030953471981166e+292
+
+var NOT_A_NUMBER = {};
+var MINUS_INFINITY = {};
+var PLUS_INFINITY = {};
+var MINUS_ZERO = {};
+var FINITE = {};
+
+// prerequisite: abs(x) >= abs(y)
+var twosum = function (x, y) {
+  var hi = x + y;
+  var lo = y - (hi - x);
+  return { hi: hi, lo: lo };
+};
+
+// `Math.sumPrecise` method
+// https://github.com/tc39/proposal-math-sum
+$({ target: 'Math', stat: true }, {
+  // eslint-disable-next-line max-statements -- ok
+  sumPrecise: function sumPrecise(items) {
+    var numbers = [];
+    var count = 0;
+    var state = MINUS_ZERO;
+
+    iterate(items, function (n) {
+      if (++count >= MAX_SAFE_INTEGER) throw new $RangeError('Maximum allowed index exceeded');
+      if (typeof n != 'number') throw new $TypeError('Value is not a number');
+      if (state !== NOT_A_NUMBER) {
+        // eslint-disable-next-line no-self-compare -- NaN check
+        if (n !== n) state = NOT_A_NUMBER;
+        else if (n === $Infinity) state = state === MINUS_INFINITY ? NOT_A_NUMBER : PLUS_INFINITY;
+        else if (n === -$Infinity) state = state === PLUS_INFINITY ? NOT_A_NUMBER : MINUS_INFINITY;
+        else if ((n !== 0 || (1 / n) === $Infinity) && (state === MINUS_ZERO || state === FINITE)) {
+          state = FINITE;
+          push(numbers, n);
+        }
+      }
+    });
+
+    switch (state) {
+      case NOT_A_NUMBER: return $NaN;
+      case MINUS_INFINITY: return -$Infinity;
+      case PLUS_INFINITY: return $Infinity;
+      case MINUS_ZERO: return -0;
+    }
+
+    var partials = [];
+    var overflow = 0; // conceptually 2 ** 1024 times this value; the final partial is biased by this amount
+    var x, y, sum, hi, lo, tmp;
+
+    for (var i = 0; i < numbers.length; i++) {
+      x = numbers[i];
+      var actuallyUsedPartials = 0;
+      for (var j = 0; j < partials.length; j++) {
+        y = partials[j];
+        if (abs(x) < abs(y)) {
+          tmp = x;
+          x = y;
+          y = tmp;
+        }
+        sum = twosum(x, y);
+        hi = sum.hi;
+        lo = sum.lo;
+        if (abs(hi) === $Infinity) {
+          var sign = hi === $Infinity ? 1 : -1;
+          overflow += sign;
+
+          x = (x - (sign * POW_2_1023)) - (sign * POW_2_1023);
+          if (abs(x) < abs(y)) {
+            tmp = x;
+            x = y;
+            y = tmp;
+          }
+          sum = twosum(x, y);
+          hi = sum.hi;
+          lo = sum.lo;
+        }
+        if (lo !== 0) partials[actuallyUsedPartials++] = lo;
+        x = hi;
+      }
+      partials.length = actuallyUsedPartials;
+      if (x !== 0) push(partials, x);
+    }
+
+    // compute the exact sum of partials, stopping once we lose precision
+    var n = partials.length - 1;
+    hi = 0;
+    lo = 0;
+
+    if (overflow !== 0) {
+      var next = n >= 0 ? partials[n] : 0;
+      n--;
+      if (abs(overflow) > 1 || (overflow > 0 && next > 0) || (overflow < 0 && next < 0)) {
+        return overflow > 0 ? $Infinity : -$Infinity;
+      }
+      // here we actually have to do the arithmetic
+      // drop a factor of 2 so we can do it without overflow
+      // assert(abs(overflow) === 1)
+      sum = twosum(overflow * POW_2_1023, next / 2);
+      hi = sum.hi;
+      lo = sum.lo;
+      lo *= 2;
+      if (abs(2 * hi) === $Infinity) {
+        // rounding to the maximum value
+        if (hi > 0) {
+          return (hi === POW_2_1023 && lo === -(MAX_ULP / 2) && n >= 0 && partials[n] < 0) ? MAX_DOUBLE : $Infinity;
+        } return (hi === -POW_2_1023 && lo === (MAX_ULP / 2) && n >= 0 && partials[n] > 0) ? -MAX_DOUBLE : -$Infinity;
+      }
+
+      if (lo !== 0) {
+        partials[++n] = lo;
+        lo = 0;
+      }
+
+      hi *= 2;
+    }
+
+    while (n >= 0) {
+      sum = twosum(hi, partials[n--]);
+      hi = sum.hi;
+      lo = sum.lo;
+      if (lo !== 0) break;
+    }
+
+    if (n >= 0 && ((lo < 0 && partials[n] < 0) || (lo > 0 && partials[n] > 0))) {
+      y = lo * 2;
+      x = hi + y;
+      if (y === x - hi) hi = x;
+    }
+
+    return hi;
+  }
+});
 
 
 /***/ }),
@@ -1954,7 +2259,7 @@ var iterateSimple = __webpack_require__(507);
 var iteratorClose = __webpack_require__(9539);
 
 // `Set.prototype.isDisjointFrom` method
-// https://tc39.github.io/proposal-set-methods/#Set.prototype.isDisjointFrom
+// https://tc39.es/ecma262/#sec-set.prototype.isdisjointfrom
 module.exports = function isDisjointFrom(other) {
   var O = aSet(this);
   var otherRec = getSetRecord(other);
@@ -2074,6 +2379,36 @@ module.exports = SILENT_ON_NON_WRITABLE_LENGTH_SET ? function (O, length) {
 
 /***/ }),
 
+/***/ 4549:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+
+// https://github.com/tc39/ecma262/pull/3467
+module.exports = function (METHOD_NAME, ExpectedError) {
+  var Iterator = globalThis.Iterator;
+  var IteratorPrototype = Iterator && Iterator.prototype;
+  var method = IteratorPrototype && IteratorPrototype[METHOD_NAME];
+
+  var CLOSED = false;
+
+  if (method) try {
+    method.call({
+      next: function () { return { done: true }; },
+      'return': function () { CLOSED = true; }
+    }, -1);
+  } catch (error) {
+    // https://bugs.webkit.org/show_bug.cgi?id=291195
+    if (!(error instanceof ExpectedError)) CLOSED = false;
+  }
+
+  if (!CLOSED) return method;
+};
+
+
+/***/ }),
+
 /***/ 4576:
 /***/ (function(module) {
 
@@ -2172,6 +2507,206 @@ $({ target: 'Promise', stat: true }, {
     };
   }
 });
+
+
+/***/ }),
+
+/***/ 4644:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var NATIVE_ARRAY_BUFFER = __webpack_require__(7811);
+var DESCRIPTORS = __webpack_require__(3724);
+var globalThis = __webpack_require__(4576);
+var isCallable = __webpack_require__(4901);
+var isObject = __webpack_require__(34);
+var hasOwn = __webpack_require__(9297);
+var classof = __webpack_require__(6955);
+var tryToString = __webpack_require__(6823);
+var createNonEnumerableProperty = __webpack_require__(6699);
+var defineBuiltIn = __webpack_require__(6840);
+var defineBuiltInAccessor = __webpack_require__(2106);
+var isPrototypeOf = __webpack_require__(1625);
+var getPrototypeOf = __webpack_require__(2787);
+var setPrototypeOf = __webpack_require__(2967);
+var wellKnownSymbol = __webpack_require__(8227);
+var uid = __webpack_require__(3392);
+var InternalStateModule = __webpack_require__(1181);
+
+var enforceInternalState = InternalStateModule.enforce;
+var getInternalState = InternalStateModule.get;
+var Int8Array = globalThis.Int8Array;
+var Int8ArrayPrototype = Int8Array && Int8Array.prototype;
+var Uint8ClampedArray = globalThis.Uint8ClampedArray;
+var Uint8ClampedArrayPrototype = Uint8ClampedArray && Uint8ClampedArray.prototype;
+var TypedArray = Int8Array && getPrototypeOf(Int8Array);
+var TypedArrayPrototype = Int8ArrayPrototype && getPrototypeOf(Int8ArrayPrototype);
+var ObjectPrototype = Object.prototype;
+var TypeError = globalThis.TypeError;
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
+var TYPED_ARRAY_CONSTRUCTOR = 'TypedArrayConstructor';
+// Fixing native typed arrays in Opera Presto crashes the browser, see #595
+var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!setPrototypeOf && classof(globalThis.opera) !== 'Opera';
+var TYPED_ARRAY_TAG_REQUIRED = false;
+var NAME, Constructor, Prototype;
+
+var TypedArrayConstructorsList = {
+  Int8Array: 1,
+  Uint8Array: 1,
+  Uint8ClampedArray: 1,
+  Int16Array: 2,
+  Uint16Array: 2,
+  Int32Array: 4,
+  Uint32Array: 4,
+  Float32Array: 4,
+  Float64Array: 8
+};
+
+var BigIntArrayConstructorsList = {
+  BigInt64Array: 8,
+  BigUint64Array: 8
+};
+
+var isView = function isView(it) {
+  if (!isObject(it)) return false;
+  var klass = classof(it);
+  return klass === 'DataView'
+    || hasOwn(TypedArrayConstructorsList, klass)
+    || hasOwn(BigIntArrayConstructorsList, klass);
+};
+
+var getTypedArrayConstructor = function (it) {
+  var proto = getPrototypeOf(it);
+  if (!isObject(proto)) return;
+  var state = getInternalState(proto);
+  return (state && hasOwn(state, TYPED_ARRAY_CONSTRUCTOR)) ? state[TYPED_ARRAY_CONSTRUCTOR] : getTypedArrayConstructor(proto);
+};
+
+var isTypedArray = function (it) {
+  if (!isObject(it)) return false;
+  var klass = classof(it);
+  return hasOwn(TypedArrayConstructorsList, klass)
+    || hasOwn(BigIntArrayConstructorsList, klass);
+};
+
+var aTypedArray = function (it) {
+  if (isTypedArray(it)) return it;
+  throw new TypeError('Target is not a typed array');
+};
+
+var aTypedArrayConstructor = function (C) {
+  if (isCallable(C) && (!setPrototypeOf || isPrototypeOf(TypedArray, C))) return C;
+  throw new TypeError(tryToString(C) + ' is not a typed array constructor');
+};
+
+var exportTypedArrayMethod = function (KEY, property, forced, options) {
+  if (!DESCRIPTORS) return;
+  if (forced) for (var ARRAY in TypedArrayConstructorsList) {
+    var TypedArrayConstructor = globalThis[ARRAY];
+    if (TypedArrayConstructor && hasOwn(TypedArrayConstructor.prototype, KEY)) try {
+      delete TypedArrayConstructor.prototype[KEY];
+    } catch (error) {
+      // old WebKit bug - some methods are non-configurable
+      try {
+        TypedArrayConstructor.prototype[KEY] = property;
+      } catch (error2) { /* empty */ }
+    }
+  }
+  if (!TypedArrayPrototype[KEY] || forced) {
+    defineBuiltIn(TypedArrayPrototype, KEY, forced ? property
+      : NATIVE_ARRAY_BUFFER_VIEWS && Int8ArrayPrototype[KEY] || property, options);
+  }
+};
+
+var exportTypedArrayStaticMethod = function (KEY, property, forced) {
+  var ARRAY, TypedArrayConstructor;
+  if (!DESCRIPTORS) return;
+  if (setPrototypeOf) {
+    if (forced) for (ARRAY in TypedArrayConstructorsList) {
+      TypedArrayConstructor = globalThis[ARRAY];
+      if (TypedArrayConstructor && hasOwn(TypedArrayConstructor, KEY)) try {
+        delete TypedArrayConstructor[KEY];
+      } catch (error) { /* empty */ }
+    }
+    if (!TypedArray[KEY] || forced) {
+      // V8 ~ Chrome 49-50 `%TypedArray%` methods are non-writable non-configurable
+      try {
+        return defineBuiltIn(TypedArray, KEY, forced ? property : NATIVE_ARRAY_BUFFER_VIEWS && TypedArray[KEY] || property);
+      } catch (error) { /* empty */ }
+    } else return;
+  }
+  for (ARRAY in TypedArrayConstructorsList) {
+    TypedArrayConstructor = globalThis[ARRAY];
+    if (TypedArrayConstructor && (!TypedArrayConstructor[KEY] || forced)) {
+      defineBuiltIn(TypedArrayConstructor, KEY, property);
+    }
+  }
+};
+
+for (NAME in TypedArrayConstructorsList) {
+  Constructor = globalThis[NAME];
+  Prototype = Constructor && Constructor.prototype;
+  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
+  else NATIVE_ARRAY_BUFFER_VIEWS = false;
+}
+
+for (NAME in BigIntArrayConstructorsList) {
+  Constructor = globalThis[NAME];
+  Prototype = Constructor && Constructor.prototype;
+  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
+}
+
+// WebKit bug - typed arrays constructors prototype is Object.prototype
+if (!NATIVE_ARRAY_BUFFER_VIEWS || !isCallable(TypedArray) || TypedArray === Function.prototype) {
+  // eslint-disable-next-line no-shadow -- safe
+  TypedArray = function TypedArray() {
+    throw new TypeError('Incorrect invocation');
+  };
+  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
+    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME], TypedArray);
+  }
+}
+
+if (!NATIVE_ARRAY_BUFFER_VIEWS || !TypedArrayPrototype || TypedArrayPrototype === ObjectPrototype) {
+  TypedArrayPrototype = TypedArray.prototype;
+  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
+    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME].prototype, TypedArrayPrototype);
+  }
+}
+
+// WebKit bug - one more object in Uint8ClampedArray prototype chain
+if (NATIVE_ARRAY_BUFFER_VIEWS && getPrototypeOf(Uint8ClampedArrayPrototype) !== TypedArrayPrototype) {
+  setPrototypeOf(Uint8ClampedArrayPrototype, TypedArrayPrototype);
+}
+
+if (DESCRIPTORS && !hasOwn(TypedArrayPrototype, TO_STRING_TAG)) {
+  TYPED_ARRAY_TAG_REQUIRED = true;
+  defineBuiltInAccessor(TypedArrayPrototype, TO_STRING_TAG, {
+    configurable: true,
+    get: function () {
+      return isObject(this) ? this[TYPED_ARRAY_TAG] : undefined;
+    }
+  });
+  for (NAME in TypedArrayConstructorsList) if (globalThis[NAME]) {
+    createNonEnumerableProperty(globalThis[NAME], TYPED_ARRAY_TAG, NAME);
+  }
+}
+
+module.exports = {
+  NATIVE_ARRAY_BUFFER_VIEWS: NATIVE_ARRAY_BUFFER_VIEWS,
+  TYPED_ARRAY_TAG: TYPED_ARRAY_TAG_REQUIRED && TYPED_ARRAY_TAG,
+  aTypedArray: aTypedArray,
+  aTypedArrayConstructor: aTypedArrayConstructor,
+  exportTypedArrayMethod: exportTypedArrayMethod,
+  exportTypedArrayStaticMethod: exportTypedArrayStaticMethod,
+  getTypedArrayConstructor: getTypedArrayConstructor,
+  isView: isView,
+  isTypedArray: isTypedArray,
+  TypedArray: TypedArray,
+  TypedArrayPrototype: TypedArrayPrototype
+};
 
 
 /***/ }),
@@ -2301,8 +2836,10 @@ module.exports = function (name, callback) {
   try {
     new Set()[name](createSetLike(0));
     try {
-      // late spec change, early WebKit ~ Safari 17.0 beta implementation does not pass it
+      // late spec change, early WebKit ~ Safari 17 implementation does not pass it
       // https://github.com/tc39/proposal-set-methods/pull/88
+      // also covered engines with
+      // https://bugs.webkit.org/show_bug.cgi?id=272679
       new Set()[name](createSetLike(-1));
       return false;
     } catch (error2) {
@@ -2443,11 +2980,14 @@ module.exports = {
 
 var $ = __webpack_require__(6518);
 var symmetricDifference = __webpack_require__(3650);
+var setMethodGetKeysBeforeCloning = __webpack_require__(9835);
 var setMethodAcceptSetLike = __webpack_require__(4916);
+
+var FORCED = !setMethodAcceptSetLike('symmetricDifference') || !setMethodGetKeysBeforeCloning('symmetricDifference');
 
 // `Set.prototype.symmetricDifference` method
 // https://tc39.es/ecma262/#sec-set.prototype.symmetricdifference
-$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('symmetricDifference') }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   symmetricDifference: symmetricDifference
 });
 
@@ -2502,6 +3042,60 @@ var SetHelpers = __webpack_require__(4402);
 module.exports = uncurryThisAccessor(SetHelpers.proto, 'size', 'get') || function (set) {
   return set.size;
 };
+
+
+/***/ }),
+
+/***/ 5213:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var fails = __webpack_require__(9039);
+
+// babel-minify and Closure Compiler transpiles RegExp('.', 'd') -> /./d and it causes SyntaxError
+var RegExp = globalThis.RegExp;
+
+var FLAGS_GETTER_IS_CORRECT = !fails(function () {
+  var INDICES_SUPPORT = true;
+  try {
+    RegExp('.', 'd');
+  } catch (error) {
+    INDICES_SUPPORT = false;
+  }
+
+  var O = {};
+  // modern V8 bug
+  var calls = '';
+  var expected = INDICES_SUPPORT ? 'dgimsy' : 'gimsy';
+
+  var addGetter = function (key, chr) {
+    // eslint-disable-next-line es/no-object-defineproperty -- safe
+    Object.defineProperty(O, key, { get: function () {
+      calls += chr;
+      return true;
+    } });
+  };
+
+  var pairs = {
+    dotAll: 's',
+    global: 'g',
+    ignoreCase: 'i',
+    multiline: 'm',
+    sticky: 'y'
+  };
+
+  if (INDICES_SUPPORT) pairs.hasIndices = 'd';
+
+  for (var key in pairs) addGetter(key, pairs[key]);
+
+  // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+  var result = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get.call(O);
+
+  return result !== expected || calls !== expected;
+});
+
+module.exports = { correct: FLAGS_GETTER_IS_CORRECT };
 
 
 /***/ }),
@@ -2568,11 +3162,22 @@ var uncurryThis = __webpack_require__(9504);
 var anUint8Array = __webpack_require__(4154);
 var notDetached = __webpack_require__(5169);
 
-var numberToString = uncurryThis(1.0.toString);
+var numberToString = uncurryThis(1.1.toString);
+
+var Uint8Array = globalThis.Uint8Array;
+
+var INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS = !Uint8Array || !Uint8Array.prototype.toHex || !(function () {
+  try {
+    var target = new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255]);
+    return target.toHex() === 'ffffffffffffffff';
+  } catch (error) {
+    return false;
+  }
+})();
 
 // `Uint8Array.prototype.toHex` method
 // https://github.com/tc39/proposal-arraybuffer-base64
-if (globalThis.Uint8Array) $({ target: 'Uint8Array', proto: true }, {
+if (Uint8Array) $({ target: 'Uint8Array', proto: true, forced: INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS }, {
   toHex: function toHex() {
     anUint8Array(this);
     notDetached(this.buffer);
@@ -2679,6 +3284,26 @@ $({ target: 'URL', stat: true, forced: !USE_NATIVE_URL }, {
     }
   }
 });
+
+
+/***/ }),
+
+/***/ 5854:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toPrimitive = __webpack_require__(2777);
+
+var $TypeError = TypeError;
+
+// `ToBigInt` abstract operation
+// https://tc39.es/ecma262/#sec-tobigint
+module.exports = function (argument) {
+  var prim = toPrimitive(argument, 'number');
+  if (typeof prim == 'number') throw new $TypeError("Can't convert number to bigint");
+  // eslint-disable-next-line es/no-bigint -- safe
+  return BigInt(prim);
+};
 
 
 /***/ }),
@@ -3378,17 +4003,29 @@ if (params.has('a', 2) || !params.has('a', undefined)) {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var forEachWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('forEach', TypeError);
 
 // `Iterator.prototype.forEach` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.foreach
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: forEachWithoutClosingOnEarlyError }, {
   forEach: function forEach(fn) {
     anObject(this);
-    aCallable(fn);
+    try {
+      aCallable(fn);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (forEachWithoutClosingOnEarlyError) return call(forEachWithoutClosingOnEarlyError, this, fn);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     iterate(record, function (value) {
@@ -3412,10 +4049,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.41.0',
+  version: '3.44.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.41.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.44.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -3428,15 +4065,38 @@ var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, 
 
 var $ = __webpack_require__(6518);
 var difference = __webpack_require__(3440);
+var fails = __webpack_require__(9039);
 var setMethodAcceptSetLike = __webpack_require__(4916);
 
-var INCORRECT = !setMethodAcceptSetLike('difference', function (result) {
+var SET_LIKE_INCORRECT_BEHAVIOR = !setMethodAcceptSetLike('difference', function (result) {
   return result.size === 0;
+});
+
+var FORCED = SET_LIKE_INCORRECT_BEHAVIOR || fails(function () {
+  // https://bugs.webkit.org/show_bug.cgi?id=288595
+  var setLike = {
+    size: 1,
+    has: function () { return true; },
+    keys: function () {
+      var index = 0;
+      return {
+        next: function () {
+          var done = index++ > 1;
+          if (baseSet.has(1)) baseSet.clear();
+          return { done: done, value: 2 };
+        }
+      };
+    }
+  };
+  // eslint-disable-next-line es/no-set -- testing
+  var baseSet = new Set([1, 2, 3, 4]);
+  // eslint-disable-next-line es/no-set-prototype-difference -- testing
+  return baseSet.difference(setLike).size !== 3;
 });
 
 // `Set.prototype.difference` method
 // https://tc39.es/ecma262/#sec-set.prototype.difference
-$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   difference: difference
 });
 
@@ -3610,7 +4270,7 @@ var $ = __webpack_require__(6518);
 var $transfer = __webpack_require__(5636);
 
 // `ArrayBuffer.prototype.transferToFixedLength` method
-// https://tc39.es/proposal-arraybuffer-transfer/#sec-arraybuffer.prototype.transfertofixedlength
+// https://tc39.es/ecma262/#sec-arraybuffer.prototype.transfertofixedlength
 if ($transfer) $({ target: 'ArrayBuffer', proto: true }, {
   transferToFixedLength: function transferToFixedLength() {
     return $transfer(this, arguments.length ? arguments[0] : undefined, false);
@@ -3696,7 +4356,7 @@ var $ = __webpack_require__(6518);
 var $transfer = __webpack_require__(5636);
 
 // `ArrayBuffer.prototype.transfer` method
-// https://tc39.es/proposal-arraybuffer-transfer/#sec-arraybuffer.prototype.transfer
+// https://tc39.es/ecma262/#sec-arraybuffer.prototype.transfer
 if ($transfer) $({ target: 'ArrayBuffer', proto: true }, {
   transfer: function transfer() {
     return $transfer(this, arguments.length ? arguments[0] : undefined, true);
@@ -3813,18 +4473,38 @@ var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+var apply = __webpack_require__(8745);
+var fails = __webpack_require__(9039);
 
 var $TypeError = TypeError;
 
+// https://bugs.webkit.org/show_bug.cgi?id=291651
+var FAILS_ON_INITIAL_UNDEFINED = fails(function () {
+  // eslint-disable-next-line es/no-iterator-prototype-reduce, es/no-array-prototype-keys, array-callback-return -- required for testing
+  [].keys().reduce(function () { /* empty */ }, undefined);
+});
+
+var reduceWithoutClosingOnEarlyError = !FAILS_ON_INITIAL_UNDEFINED && iteratorHelperWithoutClosingOnEarlyError('reduce', $TypeError);
+
 // `Iterator.prototype.reduce` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.reduce
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FAILS_ON_INITIAL_UNDEFINED || reduceWithoutClosingOnEarlyError }, {
   reduce: function reduce(reducer /* , initialValue */) {
     anObject(this);
-    aCallable(reducer);
-    var record = getIteratorDirect(this);
+    try {
+      aCallable(reducer);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
     var noInitial = arguments.length < 2;
     var accumulator = noInitial ? undefined : arguments[1];
+    if (reduceWithoutClosingOnEarlyError) {
+      return apply(reduceWithoutClosingOnEarlyError, this, noInitial ? [reducer] : [reducer, accumulator]);
+    }
+    var record = getIteratorDirect(this);
     var counter = 0;
     iterate(record, function (value) {
       if (noInitial) {
@@ -3895,7 +4575,7 @@ var iterateSimple = __webpack_require__(507);
 var iteratorClose = __webpack_require__(9539);
 
 // `Set.prototype.isSupersetOf` method
-// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSupersetOf
+// https://tc39.es/ecma262/#sec-set.prototype.issupersetof
 module.exports = function isSupersetOf(other) {
   var O = aSet(this);
   var otherRec = getSetRecord(other);
@@ -4082,7 +4762,7 @@ var add = SetHelpers.add;
 var has = SetHelpers.has;
 
 // `Set.prototype.intersection` method
-// https://github.com/tc39/proposal-set-methods
+// https://tc39.es/ecma262/#sec-set.prototype.intersection
 module.exports = function intersection(other) {
   var O = aSet(this);
   var otherRec = getSetRecord(other);
@@ -4411,9 +5091,17 @@ var $fromBase64 = __webpack_require__(9143);
 
 var Uint8Array = globalThis.Uint8Array;
 
+var INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS = !Uint8Array || !Uint8Array.fromBase64 || !function () {
+  try {
+    Uint8Array.fromBase64('', null);
+  } catch (error) {
+    return true;
+  }
+}();
+
 // `Uint8Array.fromBase64` method
 // https://github.com/tc39/proposal-arraybuffer-base64
-if (Uint8Array) $({ target: 'Uint8Array', stat: true }, {
+if (Uint8Array) $({ target: 'Uint8Array', stat: true, forced: INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS }, {
   fromBase64: function fromBase64(string /* , options */) {
     var result = $fromBase64(string, arguments.length > 1 ? arguments[1] : undefined, null, 0x1FFFFFFFFFFFFF);
     return arrayFromConstructorAndList(Uint8Array, result.bytes);
@@ -4457,10 +5145,13 @@ var getMethod = __webpack_require__(5966);
 var IteratorPrototype = (__webpack_require__(7657).IteratorPrototype);
 var createIterResultObject = __webpack_require__(2529);
 var iteratorClose = __webpack_require__(9539);
+var iteratorCloseAll = __webpack_require__(1385);
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var ITERATOR_HELPER = 'IteratorHelper';
 var WRAP_FOR_VALID_ITERATOR = 'WrapForValidIterator';
+var NORMAL = 'normal';
+var THROW = 'throw';
 var setInternalState = InternalStateModule.set;
 
 var createIteratorProxyPrototype = function (IS_ITERATOR) {
@@ -4491,11 +5182,16 @@ var createIteratorProxyPrototype = function (IS_ITERATOR) {
         return returnMethod ? call(returnMethod, iterator) : createIterResultObject(undefined, true);
       }
       if (state.inner) try {
-        iteratorClose(state.inner.iterator, 'normal');
+        iteratorClose(state.inner.iterator, NORMAL);
       } catch (error) {
-        return iteratorClose(iterator, 'throw', error);
+        return iteratorClose(iterator, THROW, error);
       }
-      if (iterator) iteratorClose(iterator, 'normal');
+      if (state.openIters) try {
+        iteratorCloseAll(state.openIters, NORMAL);
+      } catch (error) {
+        return iteratorClose(iterator, THROW, error);
+      }
+      if (iterator) iteratorClose(iterator, NORMAL);
       return createIterResultObject(undefined, true);
     }
   });
@@ -4532,61 +5228,21 @@ module.exports = function (nextHandler, IS_ITERATOR, RETURN_HANDLER_RESULT) {
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 
-var globalThis = __webpack_require__(4576);
 var DESCRIPTORS = __webpack_require__(3724);
 var defineBuiltInAccessor = __webpack_require__(2106);
-var regExpFlags = __webpack_require__(7979);
-var fails = __webpack_require__(9039);
-
-// babel-minify and Closure Compiler transpiles RegExp('.', 'd') -> /./d and it causes SyntaxError
-var RegExp = globalThis.RegExp;
-var RegExpPrototype = RegExp.prototype;
-
-var FORCED = DESCRIPTORS && fails(function () {
-  var INDICES_SUPPORT = true;
-  try {
-    RegExp('.', 'd');
-  } catch (error) {
-    INDICES_SUPPORT = false;
-  }
-
-  var O = {};
-  // modern V8 bug
-  var calls = '';
-  var expected = INDICES_SUPPORT ? 'dgimsy' : 'gimsy';
-
-  var addGetter = function (key, chr) {
-    // eslint-disable-next-line es/no-object-defineproperty -- safe
-    Object.defineProperty(O, key, { get: function () {
-      calls += chr;
-      return true;
-    } });
-  };
-
-  var pairs = {
-    dotAll: 's',
-    global: 'g',
-    ignoreCase: 'i',
-    multiline: 'm',
-    sticky: 'y'
-  };
-
-  if (INDICES_SUPPORT) pairs.hasIndices = 'd';
-
-  for (var key in pairs) addGetter(key, pairs[key]);
-
-  // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
-  var result = Object.getOwnPropertyDescriptor(RegExpPrototype, 'flags').get.call(O);
-
-  return result !== expected || calls !== expected;
-});
+var regExpFlagsDetection = __webpack_require__(5213);
+var regExpFlagsGetterImplementation = __webpack_require__(7979);
 
 // `RegExp.prototype.flags` getter
 // https://tc39.es/ecma262/#sec-get-regexp.prototype.flags
-if (FORCED) defineBuiltInAccessor(RegExpPrototype, 'flags', {
-  configurable: true,
-  get: regExpFlags
-});
+if (DESCRIPTORS && !regExpFlagsDetection.correct) {
+  defineBuiltInAccessor(RegExp.prototype, 'flags', {
+    configurable: true,
+    get: regExpFlagsGetterImplementation
+  });
+
+  regExpFlagsDetection.correct = true;
+}
 
 
 /***/ }),
@@ -4692,6 +5348,53 @@ module.exports = NATIVE_BIND ? call.bind(call) : function () {
 
 /***/ }),
 
+/***/ 9577:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var arrayWith = __webpack_require__(9928);
+var ArrayBufferViewCore = __webpack_require__(4644);
+var isBigIntArray = __webpack_require__(1108);
+var toIntegerOrInfinity = __webpack_require__(1291);
+var toBigInt = __webpack_require__(5854);
+
+var aTypedArray = ArrayBufferViewCore.aTypedArray;
+var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
+var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
+
+var PROPER_ORDER = function () {
+  try {
+    // eslint-disable-next-line no-throw-literal, es/no-typed-arrays, es/no-array-prototype-with -- required for testing
+    new Int8Array(1)['with'](2, { valueOf: function () { throw 8; } });
+  } catch (error) {
+    // some early implementations, like WebKit, does not follow the final semantic
+    // https://github.com/tc39/proposal-change-array-by-copy/pull/86
+    return error === 8;
+  }
+}();
+
+// Bug in WebKit. It should truncate a negative fractional index to zero, but instead throws an error
+var THROW_ON_NEGATIVE_FRACTIONAL_INDEX = PROPER_ORDER && function () {
+  try {
+    // eslint-disable-next-line es/no-typed-arrays, es/no-array-prototype-with -- required for testing
+    new Int8Array(1)['with'](-0.5, 1);
+  } catch (error) {
+    return true;
+  }
+}();
+
+// `%TypedArray%.prototype.with` method
+// https://tc39.es/ecma262/#sec-%typedarray%.prototype.with
+exportTypedArrayMethod('with', { 'with': function (index, value) {
+  var O = aTypedArray(this);
+  var relativeIndex = toIntegerOrInfinity(index);
+  var actualValue = isBigIntArray(O) ? toBigInt(value) : +value;
+  return arrayWith(O, getTypedArrayConstructor(O), relativeIndex, actualValue);
+} }['with'], !PROPER_ORDER || THROW_ON_NEGATIVE_FRACTIONAL_INDEX);
+
+
+/***/ }),
+
 /***/ 9617:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -4751,9 +5454,20 @@ var base64UrlAlphabet = base64Map.i2cUrl;
 
 var charAt = uncurryThis(''.charAt);
 
+var Uint8Array = globalThis.Uint8Array;
+
+var INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS = !Uint8Array || !Uint8Array.prototype.toBase64 || !function () {
+  try {
+    var target = new Uint8Array();
+    target.toBase64(null);
+  } catch (error) {
+    return true;
+  }
+}();
+
 // `Uint8Array.prototype.toBase64` method
 // https://github.com/tc39/proposal-arraybuffer-base64
-if (globalThis.Uint8Array) $({ target: 'Uint8Array', proto: true }, {
+if (Uint8Array) $({ target: 'Uint8Array', proto: true, forced: INCORRECT_BEHAVIOR_OR_DOESNT_EXISTS }, {
   toBase64: function toBase64(/* options */) {
     var array = anUint8Array(this);
     var options = arguments.length ? anObjectOrUndefined(arguments[0]) : undefined;
@@ -4811,6 +5525,68 @@ if (globalThis.Uint8Array) $({ target: 'Uint8Array', proto: true }, {
     return { read: read, written: read / 2 };
   }
 });
+
+
+/***/ }),
+
+/***/ 9835:
+/***/ ((module) => {
+
+
+// Should get iterator record of a set-like object before cloning this
+// https://bugs.webkit.org/show_bug.cgi?id=289430
+module.exports = function (METHOD_NAME) {
+  try {
+    // eslint-disable-next-line es/no-set -- needed for test
+    var baseSet = new Set();
+    var setLike = {
+      size: 0,
+      has: function () { return true; },
+      keys: function () {
+        // eslint-disable-next-line es/no-object-defineproperty -- needed for test
+        return Object.defineProperty({}, 'next', {
+          get: function () {
+            baseSet.clear();
+            baseSet.add(4);
+            return function () {
+              return { done: true };
+            };
+          }
+        });
+      }
+    };
+    var result = baseSet[METHOD_NAME](setLike);
+
+    return result.size === 1 && result.values().next().value === 4;
+  } catch (error) {
+    return false;
+  }
+};
+
+
+/***/ }),
+
+/***/ 9928:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var lengthOfArrayLike = __webpack_require__(6198);
+var toIntegerOrInfinity = __webpack_require__(1291);
+
+var $RangeError = RangeError;
+
+// https://tc39.es/ecma262/#sec-array.prototype.with
+// https://tc39.es/ecma262/#sec-%typedarray%.prototype.with
+module.exports = function (O, C, index, value) {
+  var len = lengthOfArrayLike(O);
+  var relativeIndex = toIntegerOrInfinity(index);
+  var actualIndex = relativeIndex < 0 ? len + relativeIndex : relativeIndex;
+  if (actualIndex >= len || actualIndex < 0) throw new $RangeError('Incorrect index');
+  var A = new C(len);
+  var k = 0;
+  for (; k < len; k++) A[k] = k === actualIndex ? value : O[k];
+  return A;
+};
 
 
 /***/ })
@@ -4874,6 +5650,8 @@ var es_set_is_superset_of_v2 = __webpack_require__(2475);
 var es_set_symmetric_difference_v2 = __webpack_require__(5024);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.union.v2.js
 var es_set_union_v2 = __webpack_require__(1698);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.with.js
+var es_typed_array_with = __webpack_require__(9577);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.uint8-array.set-from-base64.js
 var esnext_uint8_array_set_from_base64 = __webpack_require__(1549);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.uint8-array.set-from-hex.js
@@ -4888,6 +5666,8 @@ var web_self = __webpack_require__(3611);
 var es_iterator_reduce = __webpack_require__(8237);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.promise.try.js
 var es_promise_try = __webpack_require__(1689);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.math.sum-precise.js
+var esnext_math_sum_precise = __webpack_require__(4235);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.uint8-array.from-base64.js
 var esnext_uint8_array_from_base64 = __webpack_require__(9432);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-exception.stack.js
@@ -4895,6 +5675,8 @@ var web_dom_exception_stack = __webpack_require__(4979);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.url.parse.js
 var web_url_parse = __webpack_require__(5781);
 ;// ./src/shared/util.js
+
+
 
 
 
@@ -4939,7 +5721,8 @@ const AnnotationEditorType = {
   HIGHLIGHT: 9,
   STAMP: 13,
   INK: 15,
-  SIGNATURE: 101
+  SIGNATURE: 101,
+  COMMENT: 102
 };
 const AnnotationEditorParamsType = {
   RESIZE: 1,
@@ -4951,10 +5734,9 @@ const AnnotationEditorParamsType = {
   INK_THICKNESS: 22,
   INK_OPACITY: 23,
   HIGHLIGHT_COLOR: 31,
-  HIGHLIGHT_DEFAULT_COLOR: 32,
-  HIGHLIGHT_THICKNESS: 33,
-  HIGHLIGHT_FREE: 34,
-  HIGHLIGHT_SHOW_ALL: 35,
+  HIGHLIGHT_THICKNESS: 32,
+  HIGHLIGHT_FREE: 33,
+  HIGHLIGHT_SHOW_ALL: 34,
   DRAW_STEP: 41
 };
 const PermissionFlag = {
@@ -5375,25 +6157,16 @@ class FeatureTest {
     return shadow(this, "isImageDecoderSupported", typeof ImageDecoder !== "undefined");
   }
   static get platform() {
-    if (typeof navigator !== "undefined" && typeof navigator?.platform === "string" && typeof navigator?.userAgent === "string") {
-      const {
-        platform,
-        userAgent
-      } = navigator;
-      return shadow(this, "platform", {
-        isAndroid: userAgent.includes("Android"),
-        isLinux: platform.includes("Linux"),
-        isMac: platform.includes("Mac"),
-        isWindows: platform.includes("Win"),
-        isFirefox: userAgent.includes("Firefox")
-      });
-    }
+    const {
+      platform,
+      userAgent
+    } = navigator;
     return shadow(this, "platform", {
-      isAndroid: false,
-      isLinux: false,
-      isMac: false,
-      isWindows: false,
-      isFirefox: false
+      isAndroid: userAgent.includes("Android"),
+      isLinux: platform.includes("Linux"),
+      isMac: platform.includes("Mac"),
+      isWindows: platform.includes("Win"),
+      isFirefox: userAgent.includes("Firefox")
     });
   }
   static get isCSSRoundSupported() {
@@ -5611,7 +6384,7 @@ class Util {
   }
 }
 const PDFStringTranslateTable = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x2d8, 0x2c7, 0x2c6, 0x2d9, 0x2dd, 0x2db, 0x2da, 0x2dc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x2022, 0x2020, 0x2021, 0x2026, 0x2014, 0x2013, 0x192, 0x2044, 0x2039, 0x203a, 0x2212, 0x2030, 0x201e, 0x201c, 0x201d, 0x2018, 0x2019, 0x201a, 0x2122, 0xfb01, 0xfb02, 0x141, 0x152, 0x160, 0x178, 0x17d, 0x131, 0x142, 0x153, 0x161, 0x17e, 0, 0x20ac];
-function stringToPDFString(str) {
+function stringToPDFString(str, keepEscapeSequence = false) {
   if (str[0] >= "\xEF") {
     let encoding;
     if (str[0] === "\xFE" && str[1] === "\xFF") {
@@ -5634,7 +6407,7 @@ function stringToPDFString(str) {
         });
         const buffer = stringToBytes(str);
         const decoded = decoder.decode(buffer);
-        if (!decoded.includes("\x1b")) {
+        if (keepEscapeSequence || !decoded.includes("\x1b")) {
           return decoded;
         }
         return decoded.replaceAll(/\x1b[^\x1b]*(?:\x1b|$)/g, "");
@@ -5646,7 +6419,7 @@ function stringToPDFString(str) {
   const strBuf = [];
   for (let i = 0, ii = str.length; i < ii; i++) {
     const charCode = str.charCodeAt(i);
-    if (charCode === 0x1b) {
+    if (!keepEscapeSequence && charCode === 0x1b) {
       while (++i < ii && str.charCodeAt(i) !== 0x1b) {}
       continue;
     }
@@ -5673,6 +6446,9 @@ function isArrayEqual(arr1, arr2) {
   return true;
 }
 function getModificationDate(date = new Date()) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
   const buffer = [date.getUTCFullYear().toString(), (date.getUTCMonth() + 1).toString().padStart(2, "0"), date.getUTCDate().toString().padStart(2, "0"), date.getUTCHours().toString().padStart(2, "0"), date.getUTCMinutes().toString().padStart(2, "0"), date.getUTCSeconds().toString().padStart(2, "0")];
   return buffer.join("");
 }
@@ -5903,6 +6679,33 @@ class Dict {
   }
   set(key, value) {
     this._map.set(key, value);
+  }
+  setIfNotExists(key, value) {
+    if (!this.has(key)) {
+      this.set(key, value);
+    }
+  }
+  setIfNumber(key, value) {
+    if (typeof value === "number") {
+      this.set(key, value);
+    }
+  }
+  setIfArray(key, value) {
+    if (Array.isArray(value) || ArrayBuffer.isView(value)) {
+      this.set(key, value);
+    }
+  }
+  setIfDefined(key, value) {
+    if (value !== undefined && value !== null) {
+      this.set(key, value);
+    }
+  }
+  setIfName(key, value) {
+    if (typeof value === "string") {
+      this.set(key, Name.get(value));
+    } else if (value instanceof Name) {
+      this.set(key, value);
+    }
   }
   has(key) {
     return this._map.has(key);
@@ -6174,6 +6977,7 @@ class BaseStream {
 
 
 
+
 const PDF_VERSION_REGEXP = /^[1-9]\.\d$/;
 const MAX_INT_32 = 2 ** 31 - 1;
 const MIN_INT_32 = -(2 ** 31);
@@ -6403,9 +7207,9 @@ function _collectJS(entry, xref, list, parents) {
       } else if (typeof js === "string") {
         code = js;
       }
-      code &&= stringToPDFString(code).replaceAll("\x00", "");
+      code &&= stringToPDFString(code, true).replaceAll("\x00", "");
       if (code) {
-        list.push(code);
+        list.push(code.trim());
       }
     }
     _collectJS(entry.getRaw("Next"), xref, list, parents);
@@ -6586,10 +7390,16 @@ function getNewAnnotationsMap(annotationStorage) {
   return newAnnotationsByPage.size > 0 ? newAnnotationsByPage : null;
 }
 function stringToAsciiOrUTF16BE(str) {
+  if (str === null || str === undefined) {
+    return str;
+  }
   return isAscii(str) ? str : stringToUTF16String(str, true);
 }
 function isAscii(str) {
-  return /^[\x00-\x7F]*$/.test(str);
+  if (typeof str !== "string") {
+    return false;
+  }
+  return !str || /^[\x00-\x7F]*$/.test(str);
 }
 function stringToUTF16HexString(str) {
   const buf = [];
@@ -6640,42 +7450,70 @@ var web_url_search_params_size = __webpack_require__(8721);
 
 
 
+
 class QCMS {
-  static _module = null;
+  static #memoryArray = null;
+  static _memory = null;
   static _mustAddAlpha = false;
   static _destBuffer = null;
+  static _destOffset = 0;
+  static _destLength = 0;
+  static _cssColor = "";
+  static _makeHexColor = null;
+  static get _memoryArray() {
+    const array = this.#memoryArray;
+    if (array?.byteLength) {
+      return array;
+    }
+    return this.#memoryArray = new Uint8Array(this._memory.buffer);
+  }
 }
 function copy_result(ptr, len) {
   const {
-    _module,
     _mustAddAlpha,
-    _destBuffer
+    _destBuffer,
+    _destOffset,
+    _destLength,
+    _memoryArray
   } = QCMS;
-  const result = new Uint8Array(_module.memory.buffer, ptr, len);
-  if (result.length === _destBuffer.length) {
-    _destBuffer.set(result);
+  if (len === _destLength) {
+    _destBuffer.set(_memoryArray.subarray(ptr, ptr + len), _destOffset);
     return;
   }
   if (_mustAddAlpha) {
-    for (let i = 0, j = 0, ii = result.length; i < ii; i += 3, j += 4) {
-      _destBuffer[j] = result[i];
-      _destBuffer[j + 1] = result[i + 1];
-      _destBuffer[j + 2] = result[i + 2];
+    for (let i = ptr, ii = ptr + len, j = _destOffset; i < ii; i += 3, j += 4) {
+      _destBuffer[j] = _memoryArray[i];
+      _destBuffer[j + 1] = _memoryArray[i + 1];
+      _destBuffer[j + 2] = _memoryArray[i + 2];
       _destBuffer[j + 3] = 255;
     }
   } else {
-    for (let i = 0, j = 0, ii = result.length; i < ii; i += 3, j += 4) {
-      _destBuffer[j] = result[i];
-      _destBuffer[j + 1] = result[i + 1];
-      _destBuffer[j + 2] = result[i + 2];
+    for (let i = ptr, ii = ptr + len, j = _destOffset; i < ii; i += 3, j += 4) {
+      _destBuffer[j] = _memoryArray[i];
+      _destBuffer[j + 1] = _memoryArray[i + 1];
+      _destBuffer[j + 2] = _memoryArray[i + 2];
     }
   }
 }
 function copy_rgb(ptr) {
-  QCMS._destBuffer.set(new Uint8Array(QCMS._module.memory.buffer, ptr, 3));
+  const {
+    _destBuffer,
+    _destOffset,
+    _memoryArray
+  } = QCMS;
+  _destBuffer[_destOffset] = _memoryArray[ptr];
+  _destBuffer[_destOffset + 1] = _memoryArray[ptr + 1];
+  _destBuffer[_destOffset + 2] = _memoryArray[ptr + 2];
+}
+function make_cssRGB(ptr) {
+  const {
+    _memoryArray
+  } = QCMS;
+  QCMS._cssColor = QCMS._makeHexColor(_memoryArray[ptr], _memoryArray[ptr + 1], _memoryArray[ptr + 2]);
 }
 
 ;// ./external/qcms/qcms.js
+
 
 
 
@@ -6723,14 +7561,14 @@ function qcms_convert_array(transformer, src) {
   const len0 = WASM_VECTOR_LEN;
   wasm.qcms_convert_array(transformer, ptr0, len0);
 }
-function qcms_convert_one(transformer, src) {
-  wasm.qcms_convert_one(transformer, src);
+function qcms_convert_one(transformer, src, css) {
+  wasm.qcms_convert_one(transformer, src, css);
 }
-function qcms_convert_three(transformer, src1, src2, src3) {
-  wasm.qcms_convert_three(transformer, src1, src2, src3);
+function qcms_convert_three(transformer, src1, src2, src3, css) {
+  wasm.qcms_convert_three(transformer, src1, src2, src3, css);
 }
-function qcms_convert_four(transformer, src1, src2, src3, src4) {
-  wasm.qcms_convert_four(transformer, src1, src2, src3, src4);
+function qcms_convert_four(transformer, src1, src2, src3, src4, css) {
+  wasm.qcms_convert_four(transformer, src1, src2, src3, src4, css);
 }
 function qcms_transformer_from_memory(mem, in_type, intent) {
   const ptr0 = passArray8ToWasm0(mem, wasm.__wbindgen_malloc);
@@ -6801,6 +7639,9 @@ function __wbg_get_imports() {
   imports.wbg.__wbg_copyrgb_d60ce17bb05d9b67 = function (arg0) {
     copy_rgb(arg0 >>> 0);
   };
+  imports.wbg.__wbg_makecssRGB_893bf0cd9fdb302d = function (arg0) {
+    make_cssRGB(arg0 >>> 0);
+  };
   imports.wbg.__wbindgen_init_externref_table = function () {
     const table = wasm.__wbindgen_export_0;
     const offset = table.grow(4);
@@ -6853,12 +7694,6 @@ async function __wbg_init(module_or_path) {
       console.warn('using deprecated parameters for the initialization function; pass a single object instead');
     }
   }
-  if (typeof module_or_path === 'undefined') {
-    module_or_path = new URL(
-    /*webpackIgnore: true*/
-    /*@vite-ignore*/
-    'qcms_bg.wasm', import.meta.url);
-  }
   const imports = __wbg_get_imports();
   if (typeof module_or_path === 'string' || typeof Request === 'function' && module_or_path instanceof Request || typeof URL === 'function' && module_or_path instanceof URL) {
     module_or_path = fetch(module_or_path);
@@ -6873,6 +7708,7 @@ async function __wbg_init(module_or_path) {
 
 /* harmony default export */ const qcms = ((/* unused pure expression or super */ null && (__wbg_init)));
 ;// ./src/core/colorspace.js
+
 
 
 
@@ -6958,14 +7794,18 @@ function copyRgbaImage(src, dest, alpha01) {
   }
 }
 class ColorSpace {
+  static #rgbBuf = new Uint8ClampedArray(3);
   constructor(name, numComps) {
     this.name = name;
     this.numComps = numComps;
   }
-  getRgb(src, srcOffset) {
-    const rgb = new Uint8ClampedArray(3);
-    this.getRgbItem(src, srcOffset, rgb, 0);
-    return rgb;
+  getRgb(src, srcOffset, output = new Uint8ClampedArray(3)) {
+    this.getRgbItem(src, srcOffset, output, 0);
+    return output;
+  }
+  getRgbHex(src, srcOffset) {
+    const buffer = this.getRgb(src, srcOffset, ColorSpace.#rgbBuf);
+    return Util.makeHexColor(buffer[0], buffer[1], buffer[2]);
   }
   getRgbItem(src, srcOffset, dest, destOffset) {
     unreachable("Should not call ColorSpace.getRgbItem");
@@ -7575,6 +8415,7 @@ class LabCS extends ColorSpace {
 
 
 
+
 function fetchSync(url) {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, false);
@@ -7599,15 +8440,15 @@ class IccColorSpace extends ColorSpace {
     switch (numComps) {
       case 1:
         inType = DataType.Gray8;
-        this.#convertPixel = (src, srcOffset) => qcms_convert_one(this.#transformer, src[srcOffset] * 255);
+        this.#convertPixel = (src, srcOffset, css) => qcms_convert_one(this.#transformer, src[srcOffset] * 255, css);
         break;
       case 3:
         inType = DataType.RGB8;
-        this.#convertPixel = (src, srcOffset) => qcms_convert_three(this.#transformer, src[srcOffset] * 255, src[srcOffset + 1] * 255, src[srcOffset + 2] * 255);
+        this.#convertPixel = (src, srcOffset, css) => qcms_convert_three(this.#transformer, src[srcOffset] * 255, src[srcOffset + 1] * 255, src[srcOffset + 2] * 255, css);
         break;
       case 4:
         inType = DataType.CMYK;
-        this.#convertPixel = (src, srcOffset) => qcms_convert_four(this.#transformer, src[srcOffset] * 255, src[srcOffset + 1] * 255, src[srcOffset + 2] * 255, src[srcOffset + 3] * 255);
+        this.#convertPixel = (src, srcOffset, css) => qcms_convert_four(this.#transformer, src[srcOffset] * 255, src[srcOffset + 1] * 255, src[srcOffset + 2] * 255, src[srcOffset + 3] * 255, css);
         break;
       default:
         throw new Error(`Unsupported number of components: ${numComps}`);
@@ -7618,9 +8459,15 @@ class IccColorSpace extends ColorSpace {
     }
     IccColorSpace.#finalizer.register(this, this.#transformer);
   }
+  getRgbHex(src, srcOffset) {
+    this.#convertPixel(src, srcOffset, true);
+    return QCMS._cssColor;
+  }
   getRgbItem(src, srcOffset, dest, destOffset) {
-    QCMS._destBuffer = dest.subarray(destOffset, destOffset + 3);
-    this.#convertPixel(src, srcOffset);
+    QCMS._destBuffer = dest;
+    QCMS._destOffset = destOffset;
+    QCMS._destLength = 3;
+    this.#convertPixel(src, srcOffset, false);
     QCMS._destBuffer = null;
   }
   getRgbBuffer(src, srcOffset, count, dest, destOffset, bits, alpha01) {
@@ -7632,7 +8479,9 @@ class IccColorSpace extends ColorSpace {
       }
     }
     QCMS._mustAddAlpha = alpha01 && dest.buffer === src.buffer;
-    QCMS._destBuffer = dest.subarray(destOffset, destOffset + count * (3 + alpha01));
+    QCMS._destBuffer = dest;
+    QCMS._destOffset = destOffset;
+    QCMS._destLength = count * (3 + alpha01);
     qcms_convert_array(this.#transformer, src);
     QCMS._mustAddAlpha = false;
     QCMS._destBuffer = null;
@@ -7657,10 +8506,12 @@ class IccColorSpace extends ColorSpace {
     if (this.#useWasm) {
       if (this.#wasmUrl) {
         try {
-          this._module = QCMS._module = initSync({
+          this._module = initSync({
             module: fetchSync(`${this.#wasmUrl}qcms_bg.wasm`)
           });
           isUsable = !!this._module;
+          QCMS._memory = this._module.memory;
+          QCMS._makeHexColor = Util.makeHexColor;
         } catch (e) {
           warn(`ICCBased color space: "${e}".`);
         }
@@ -7696,6 +8547,7 @@ class CmykICCBasedCS extends IccColorSpace {
 }
 
 ;// ./src/core/stream.js
+
 
 
 
@@ -7771,6 +8623,7 @@ class NullStream extends Stream {
 }
 
 ;// ./src/core/chunked_stream.js
+
 
 
 
@@ -8216,6 +9069,7 @@ class ChunkedStreamManager {
 
 
 
+
 function convertToRGBA(params) {
   switch (params.kind) {
     case ImageKind.GRAYSCALE_1BPP:
@@ -8333,6 +9187,7 @@ function grayToRGBA(src, dest) {
 
 
 
+
 const MIN_IMAGE_DIM = 2048;
 const MAX_IMAGE_DIM = 65537;
 const MAX_ERROR = 128;
@@ -8370,6 +9225,22 @@ class ImageResizer {
     this.#goodSquareLength = this._guessMax(this.#goodSquareLength, MAX_DIM, MAX_ERROR, 0);
     const maxArea = this.MAX_AREA = this.#goodSquareLength ** 2;
     return area > maxArea;
+  }
+  static getReducePowerForJPX(width, height, componentsCount) {
+    const area = width * height;
+    const maxJPXArea = 2 ** 30 / (componentsCount * 4);
+    if (!this.needsToBeResized(width, height)) {
+      if (area > maxJPXArea) {
+        return Math.ceil(Math.log2(area / maxJPXArea));
+      }
+      return 0;
+    }
+    const {
+      MAX_DIM,
+      MAX_AREA
+    } = this;
+    const minFactor = Math.max(width / MAX_DIM, height / MAX_DIM, Math.sqrt(area / Math.min(maxJPXArea, MAX_AREA)));
+    return Math.ceil(Math.log2(minFactor));
   }
   static get MAX_DIM() {
     return shadow(this, "MAX_DIM", this._guessMax(MIN_IMAGE_DIM, MAX_IMAGE_DIM, 0, 1));
@@ -8689,6 +9560,7 @@ class ImageResizer {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.filter.js
 var es_iterator_filter = __webpack_require__(2489);
 ;// ./src/core/decode_stream.js
+
 
 
 
@@ -9080,6 +9952,7 @@ class ColorSpaceUtils {
 }
 
 ;// ./src/core/jpg.js
+
 
 
 
@@ -10209,6 +11082,7 @@ class JpegImage {
 
 
 
+
 class JpegStream extends DecodeStream {
   static #isImageDecoderSupported = FeatureTest.isImageDecoderSupported;
   constructor(stream, maybeLength, params) {
@@ -10335,8 +11209,6 @@ class JpegStream extends DecodeStream {
   }
 }
 
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.for-each.js
-var es_iterator_for_each = __webpack_require__(7588);
 ;// ./external/openjpeg/openjpeg.js
 
 
@@ -10350,10 +11222,7 @@ var es_iterator_for_each = __webpack_require__(7588);
 
 
 
-
-
 var OpenJPEG = (() => {
-  var _scriptName = import.meta.url;
   return async function (moduleArg = {}) {
     var moduleRtn;
     var Module = moduleArg;
@@ -10364,34 +11233,18 @@ var OpenJPEG = (() => {
     });
     var ENVIRONMENT_IS_WEB = true;
     var ENVIRONMENT_IS_WORKER = false;
-    var moduleOverrides = Object.assign({}, Module);
     var arguments_ = [];
     var thisProgram = "./this.program";
     var quit_ = (status, toThrow) => {
       throw toThrow;
     };
+    var _scriptName = import.meta.url;
     var scriptDirectory = "";
-    function locateFile(path) {
-      if (Module["locateFile"]) {
-        return Module["locateFile"](path, scriptDirectory);
-      }
-      return scriptDirectory + path;
-    }
     var readAsync, readBinary;
     if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-      if (ENVIRONMENT_IS_WORKER) {
-        scriptDirectory = self.location.href;
-      } else if (typeof document != "undefined" && document.currentScript) {
-        scriptDirectory = document.currentScript.src;
-      }
-      if (_scriptName) {
-        scriptDirectory = _scriptName;
-      }
-      if (scriptDirectory.startsWith("blob:")) {
-        scriptDirectory = "";
-      } else {
-        scriptDirectory = scriptDirectory.slice(0, scriptDirectory.replace(/[?#].*/, "").lastIndexOf("/") + 1);
-      }
+      try {
+        scriptDirectory = new URL(".", _scriptName).href;
+      } catch {}
       readAsync = async url => {
         var response = await fetch(url, {
           credentials: "same-origin"
@@ -10402,13 +11255,9 @@ var OpenJPEG = (() => {
         throw new Error(response.status + " : " + response.url);
       };
     } else {}
-    var out = Module["print"] || console.log.bind(console);
-    var err = Module["printErr"] || console.error.bind(console);
-    Object.assign(Module, moduleOverrides);
-    moduleOverrides = null;
-    if (Module["arguments"]) arguments_ = Module["arguments"];
-    if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
-    var wasmBinary = Module["wasmBinary"];
+    var out = console.log.bind(console);
+    var err = console.error.bind(console);
+    var wasmBinary;
     var wasmMemory;
     var ABORT = false;
     var EXITSTATUS;
@@ -10416,16 +11265,16 @@ var OpenJPEG = (() => {
     var runtimeInitialized = false;
     function updateMemoryViews() {
       var b = wasmMemory.buffer;
-      Module["HEAP8"] = HEAP8 = new Int8Array(b);
-      Module["HEAP16"] = HEAP16 = new Int16Array(b);
-      Module["HEAPU8"] = HEAPU8 = new Uint8Array(b);
-      Module["HEAPU16"] = HEAPU16 = new Uint16Array(b);
-      Module["HEAP32"] = HEAP32 = new Int32Array(b);
-      Module["HEAPU32"] = HEAPU32 = new Uint32Array(b);
-      Module["HEAPF32"] = HEAPF32 = new Float32Array(b);
-      Module["HEAPF64"] = HEAPF64 = new Float64Array(b);
-      Module["HEAP64"] = HEAP64 = new BigInt64Array(b);
-      Module["HEAPU64"] = HEAPU64 = new BigUint64Array(b);
+      HEAP8 = new Int8Array(b);
+      HEAP16 = new Int16Array(b);
+      HEAPU8 = new Uint8Array(b);
+      HEAPU16 = new Uint16Array(b);
+      HEAP32 = new Int32Array(b);
+      HEAPU32 = new Uint32Array(b);
+      HEAPF32 = new Float32Array(b);
+      HEAPF64 = new Float64Array(b);
+      HEAP64 = new BigInt64Array(b);
+      HEAPU64 = new BigUint64Array(b);
     }
     function preRun() {
       if (Module["preRun"]) {
@@ -10477,58 +11326,6 @@ var OpenJPEG = (() => {
       throw e;
     }
     var wasmBinaryFile;
-    function findWasmBinary() {
-      if (Module["locateFile"]) {
-        return locateFile("openjpeg.wasm");
-      }
-      return new URL(
-      /*webpackIgnore: true*/
-      /*@vite-ignore*/
-      "openjpeg.wasm", import.meta.url).href;
-    }
-    function getBinarySync(file) {
-      if (file == wasmBinaryFile && wasmBinary) {
-        return new Uint8Array(wasmBinary);
-      }
-      if (readBinary) {
-        return readBinary(file);
-      }
-      throw "both async and sync fetching of the wasm failed";
-    }
-    async function getWasmBinary(binaryFile) {
-      if (!wasmBinary) {
-        try {
-          var response = await readAsync(binaryFile);
-          return new Uint8Array(response);
-        } catch {}
-      }
-      return getBinarySync(binaryFile);
-    }
-    async function instantiateArrayBuffer(binaryFile, imports) {
-      try {
-        var binary = await getWasmBinary(binaryFile);
-        var instance = await WebAssembly.instantiate(binary, imports);
-        return instance;
-      } catch (reason) {
-        err(`failed to asynchronously prepare wasm: ${reason}`);
-        abort(reason);
-      }
-    }
-    async function instantiateAsync(binary, binaryFile, imports) {
-      if (!binary && typeof WebAssembly.instantiateStreaming == "function") {
-        try {
-          var response = fetch(binaryFile, {
-            credentials: "same-origin"
-          });
-          var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
-          return instantiationResult;
-        } catch (reason) {
-          err(`wasm streaming compile failed: ${reason}`);
-          err("falling back to ArrayBuffer instantiation");
-        }
-      }
-      return instantiateArrayBuffer(binaryFile, imports);
-    }
     function getWasmImports() {
       return {
         a: wasmImports
@@ -10543,27 +11340,12 @@ var OpenJPEG = (() => {
         return wasmExports;
       }
       addRunDependency("wasm-instantiate");
-      function receiveInstantiationResult(result) {
-        return receiveInstance(result["instance"]);
-      }
       var info = getWasmImports();
-      if (Module["instantiateWasm"]) {
-        return new Promise((resolve, reject) => {
-          Module["instantiateWasm"](info, (mod, inst) => {
-            receiveInstance(mod, inst);
-            resolve(mod.exports);
-          });
+      return new Promise((resolve, reject) => {
+        Module["instantiateWasm"](info, (mod, inst) => {
+          resolve(receiveInstance(mod, inst));
         });
-      }
-      wasmBinaryFile ??= findWasmBinary();
-      try {
-        var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
-        var exports = receiveInstantiationResult(result);
-        return exports;
-      } catch (e) {
-        readyPromiseReject(e);
-        return Promise.reject(e);
-      }
+      });
     }
     class ExitStatus {
       name = "ExitStatus";
@@ -10578,10 +11360,10 @@ var OpenJPEG = (() => {
       }
     };
     var onPostRuns = [];
-    var addOnPostRun = cb => onPostRuns.unshift(cb);
+    var addOnPostRun = cb => onPostRuns.push(cb);
     var onPreRuns = [];
-    var addOnPreRun = cb => onPreRuns.unshift(cb);
-    var noExitRuntime = Module["noExitRuntime"] || true;
+    var addOnPreRun = cb => onPreRuns.push(cb);
+    var noExitRuntime = true;
     var __abort_js = () => abort("");
     var runtimeKeepaliveCounter = 0;
     var __emscripten_runtime_keepalive_clear = () => {
@@ -10737,27 +11519,75 @@ var OpenJPEG = (() => {
       }
       return getEnvStrings.strings;
     };
-    var stringToAscii = (str, buffer) => {
+    var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
+      if (!(maxBytesToWrite > 0)) return 0;
+      var startIdx = outIdx;
+      var endIdx = outIdx + maxBytesToWrite - 1;
       for (var i = 0; i < str.length; ++i) {
-        HEAP8[buffer++] = str.charCodeAt(i);
+        var u = str.charCodeAt(i);
+        if (u >= 55296 && u <= 57343) {
+          var u1 = str.charCodeAt(++i);
+          u = 65536 + ((u & 1023) << 10) | u1 & 1023;
+        }
+        if (u <= 127) {
+          if (outIdx >= endIdx) break;
+          heap[outIdx++] = u;
+        } else if (u <= 2047) {
+          if (outIdx + 1 >= endIdx) break;
+          heap[outIdx++] = 192 | u >> 6;
+          heap[outIdx++] = 128 | u & 63;
+        } else if (u <= 65535) {
+          if (outIdx + 2 >= endIdx) break;
+          heap[outIdx++] = 224 | u >> 12;
+          heap[outIdx++] = 128 | u >> 6 & 63;
+          heap[outIdx++] = 128 | u & 63;
+        } else {
+          if (outIdx + 3 >= endIdx) break;
+          heap[outIdx++] = 240 | u >> 18;
+          heap[outIdx++] = 128 | u >> 12 & 63;
+          heap[outIdx++] = 128 | u >> 6 & 63;
+          heap[outIdx++] = 128 | u & 63;
+        }
       }
-      HEAP8[buffer] = 0;
+      heap[outIdx] = 0;
+      return outIdx - startIdx;
     };
+    var stringToUTF8 = (str, outPtr, maxBytesToWrite) => stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
     var _environ_get = (__environ, environ_buf) => {
       var bufSize = 0;
-      getEnvStrings().forEach((string, i) => {
+      var envp = 0;
+      for (var string of getEnvStrings()) {
         var ptr = environ_buf + bufSize;
-        HEAPU32[__environ + i * 4 >> 2] = ptr;
-        stringToAscii(string, ptr);
-        bufSize += string.length + 1;
-      });
+        HEAPU32[__environ + envp >> 2] = ptr;
+        bufSize += stringToUTF8(string, ptr, Infinity) + 1;
+        envp += 4;
+      }
       return 0;
+    };
+    var lengthBytesUTF8 = str => {
+      var len = 0;
+      for (var i = 0; i < str.length; ++i) {
+        var c = str.charCodeAt(i);
+        if (c <= 127) {
+          len++;
+        } else if (c <= 2047) {
+          len += 2;
+        } else if (c >= 55296 && c <= 57343) {
+          len += 4;
+          ++i;
+        } else {
+          len += 3;
+        }
+      }
+      return len;
     };
     var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
       var strings = getEnvStrings();
       HEAPU32[penviron_count >> 2] = strings.length;
       var bufSize = 0;
-      strings.forEach(string => bufSize += string.length + 1);
+      for (var string of strings) {
+        bufSize += lengthBytesUTF8(string) + 1;
+      }
       HEAPU32[penviron_buf_size >> 2] = bufSize;
       return 0;
     };
@@ -10876,6 +11706,16 @@ var OpenJPEG = (() => {
         Module.errorMessages += "\n" + message;
       }
     }
+    var writeArrayToMemory = (array, buffer) => {
+      HEAP8.set(array, buffer);
+    };
+    if (Module["noExitRuntime"]) noExitRuntime = Module["noExitRuntime"];
+    if (Module["print"]) out = Module["print"];
+    if (Module["printErr"]) err = Module["printErr"];
+    if (Module["wasmBinary"]) wasmBinary = Module["wasmBinary"];
+    if (Module["arguments"]) arguments_ = Module["arguments"];
+    if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
+    Module["writeArrayToMemory"] = writeArrayToMemory;
     var wasmImports = {
       l: __abort_js,
       k: __emscripten_runtime_keepalive_clear,
@@ -10900,8 +11740,8 @@ var OpenJPEG = (() => {
     var ___wasm_call_ctors = wasmExports["t"];
     var _malloc = Module["_malloc"] = wasmExports["u"];
     var _free = Module["_free"] = wasmExports["v"];
-    var _jp2_decode = Module["_jp2_decode"] = wasmExports["x"];
-    var __emscripten_timeout = wasmExports["y"];
+    var _jp2_decode = Module["_jp2_decode"] = wasmExports["w"];
+    var __emscripten_timeout = wasmExports["x"];
     function run() {
       if (runDependencies > 0) {
         dependenciesFulfilled = run;
@@ -10930,12 +11770,15 @@ var OpenJPEG = (() => {
         doRun();
       }
     }
-    if (Module["preInit"]) {
-      if (typeof Module["preInit"] == "function") Module["preInit"] = [Module["preInit"]];
-      while (Module["preInit"].length > 0) {
-        Module["preInit"].pop()();
+    function preInit() {
+      if (Module["preInit"]) {
+        if (typeof Module["preInit"] == "function") Module["preInit"] = [Module["preInit"]];
+        while (Module["preInit"].length > 0) {
+          Module["preInit"].shift()();
+        }
       }
     }
+    preInit();
     run();
     moduleRtn = readyPromise;
     return moduleRtn;
@@ -11017,7 +11860,8 @@ class JpxImage {
   static async decode(bytes, {
     numComponents = 4,
     isIndexedColormap = false,
-    smaskInData = false
+    smaskInData = false,
+    reducePower = 0
   } = {}) {
     if (!this.#modulePromise) {
       const {
@@ -11043,8 +11887,8 @@ class JpxImage {
     try {
       const size = bytes.length;
       ptr = module._malloc(size);
-      module.HEAPU8.set(bytes, ptr);
-      const ret = module._jp2_decode(ptr, size, numComponents > 0 ? numComponents : 0, !!isIndexedColormap, !!smaskInData);
+      module.writeArrayToMemory(bytes, ptr);
+      const ret = module._jp2_decode(ptr, size, numComponents > 0 ? numComponents : 0, !!isIndexedColormap, !!smaskInData, reducePower);
       if (ret) {
         const {
           errorMessages
@@ -11096,6 +11940,7 @@ class JpxImage {
 }
 
 ;// ./src/core/operator_list.js
+
 
 
 
@@ -11452,18 +12297,20 @@ addState(InitialState, [OPS.save, OPS.transform, OPS.constructPath, OPS.restore]
   const args = argsArray[iFirstConstructPath];
   const transform = argsArray[iFirstTransform];
   const [, [buffer], minMax] = args;
-  Util.scaleMinMax(transform, minMax);
-  for (let k = 0, kk = buffer.length; k < kk;) {
-    switch (buffer[k++]) {
-      case DrawOPS.moveTo:
-      case DrawOPS.lineTo:
-        Util.applyTransform(buffer, transform, k);
-        k += 2;
-        break;
-      case DrawOPS.curveTo:
-        Util.applyTransformToBezier(buffer, transform, k);
-        k += 6;
-        break;
+  if (minMax) {
+    Util.scaleMinMax(transform, minMax);
+    for (let k = 0, kk = buffer.length; k < kk;) {
+      switch (buffer[k++]) {
+        case DrawOPS.moveTo:
+        case DrawOPS.lineTo:
+          Util.applyTransform(buffer, transform, k);
+          k += 2;
+          break;
+        case DrawOPS.curveTo:
+          Util.applyTransformToBezier(buffer, transform, k);
+          k += 6;
+          break;
+      }
     }
   }
   fnArray.splice(iFirstSave, 4, OPS.constructPath);
@@ -11710,7 +12557,10 @@ class OperatorList {
 var es_iterator_find = __webpack_require__(116);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.flags.js
 var es_regexp_flags = __webpack_require__(9479);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.for-each.js
+var es_iterator_for_each = __webpack_require__(7588);
 ;// ./src/core/binary_cmap.js
+
 
 
 
@@ -11984,6 +12834,7 @@ class BinaryCMapReader {
 
 
 
+
 class Ascii85Stream extends DecodeStream {
   constructor(str, maybeLength) {
     if (maybeLength) {
@@ -12100,6 +12951,7 @@ class AsciiHexStream extends DecodeStream {
 }
 
 ;// ./src/core/ccitt.js
+
 
 
 
@@ -12664,6 +13516,7 @@ class CCITTFaxStream extends DecodeStream {
 
 
 
+
 const codeLenCodeMap = new Int32Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
 const lengthDecode = new Int32Array([0x00003, 0x00004, 0x00005, 0x00006, 0x00007, 0x00008, 0x00009, 0x0000a, 0x1000b, 0x1000d, 0x1000f, 0x10011, 0x20013, 0x20017, 0x2001b, 0x2001f, 0x30023, 0x3002b, 0x30033, 0x3003b, 0x40043, 0x40053, 0x40063, 0x40073, 0x50083, 0x500a3, 0x500c3, 0x500e3, 0x00102, 0x00102, 0x00102]);
 const distDecode = new Int32Array([0x00001, 0x00002, 0x00003, 0x00004, 0x10005, 0x10007, 0x20009, 0x2000d, 0x30011, 0x30019, 0x40021, 0x40031, 0x50041, 0x50061, 0x60081, 0x600c1, 0x70101, 0x70181, 0x80201, 0x80301, 0x90401, 0x90601, 0xa0801, 0xa0c01, 0xb1001, 0xb1801, 0xc2001, 0xc3001, 0xd4001, 0xd6001]);
@@ -12693,7 +13546,13 @@ class FlateStream extends DecodeStream {
   }
   async getImageData(length, _decoderOptions) {
     const data = await this.asyncGetBytes();
-    return data?.subarray(0, length) || this.getBytes(length);
+    if (!data) {
+      return this.getBytes(length);
+    }
+    if (data.length <= length) {
+      return data;
+    }
+    return data.subarray(0, length);
   }
   async asyncGetBytes() {
     this.str.reset();
@@ -13279,6 +14138,7 @@ class ArithmeticDecoder {
 }
 
 ;// ./src/core/jbig2.js
+
 
 
 
@@ -14439,9 +15299,6 @@ function parseJbig2Chunks(chunks) {
   }
   return visitor.buffer;
 }
-function parseJbig2(data) {
-  throw new Error("Not implemented: parseJbig2");
-}
 class SimpleSegmentVisitor {
   onPageInformation(info) {
     this.currentPageInfo = info;
@@ -15135,6 +15992,7 @@ class JpxStream extends DecodeStream {
 
 
 
+
 class LZWStream extends DecodeStream {
   constructor(str, maybeLength, earlyChange) {
     super(maybeLength);
@@ -15251,6 +16109,7 @@ class LZWStream extends DecodeStream {
 }
 
 ;// ./src/core/predictor_stream.js
+
 
 
 
@@ -15480,6 +16339,7 @@ class RunLengthStream extends DecodeStream {
 }
 
 ;// ./src/core/parser.js
+
 
 
 
@@ -21692,6 +22552,7 @@ function clearUnicodeCaches() {
 
 
 
+
 const SEAC_ANALYSIS_ENABLED = true;
 const FontFlags = {
   FixedPitch: 1,
@@ -21947,6 +22808,7 @@ const ExpertCharset = [".notdef", "space", "exclamsmall", "Hungarumlautsmall", "
 const ExpertSubsetCharset = [".notdef", "space", "dollaroldstyle", "dollarsuperior", "parenleftsuperior", "parenrightsuperior", "twodotenleader", "onedotenleader", "comma", "hyphen", "period", "fraction", "zerooldstyle", "oneoldstyle", "twooldstyle", "threeoldstyle", "fouroldstyle", "fiveoldstyle", "sixoldstyle", "sevenoldstyle", "eightoldstyle", "nineoldstyle", "colon", "semicolon", "commasuperior", "threequartersemdash", "periodsuperior", "asuperior", "bsuperior", "centsuperior", "dsuperior", "esuperior", "isuperior", "lsuperior", "msuperior", "nsuperior", "osuperior", "rsuperior", "ssuperior", "tsuperior", "ff", "fi", "fl", "ffi", "ffl", "parenleftinferior", "parenrightinferior", "hyphensuperior", "colonmonetary", "onefitted", "rupiah", "centoldstyle", "figuredash", "hypheninferior", "onequarter", "onehalf", "threequarters", "oneeighth", "threeeighths", "fiveeighths", "seveneighths", "onethird", "twothirds", "zerosuperior", "onesuperior", "twosuperior", "threesuperior", "foursuperior", "fivesuperior", "sixsuperior", "sevensuperior", "eightsuperior", "ninesuperior", "zeroinferior", "oneinferior", "twoinferior", "threeinferior", "fourinferior", "fiveinferior", "sixinferior", "seveninferior", "eightinferior", "nineinferior", "centinferior", "dollarinferior", "periodinferior", "commainferior"];
 
 ;// ./src/core/cff_parser.js
+
 
 
 
@@ -23313,7 +24175,7 @@ class CFFCompiler {
     const numGlyphsLessNotDef = numGlyphs - 1;
     if (isCIDFont) {
       const nLeft = numGlyphsLessNotDef - 1;
-      out = new Uint8Array([2, 0, 0, nLeft >> 8 & 0xff, nLeft & 0xff]);
+      out = new Uint8Array([2, 0, 1, nLeft >> 8 & 0xff, nLeft & 0xff]);
     } else {
       const length = 1 + numGlyphsLessNotDef * 2;
       out = new Uint8Array(length);
@@ -24484,6 +25346,7 @@ class CFFFont {
 }
 
 ;// ./src/core/font_renderer.js
+
 
 
 
@@ -28326,6 +29189,8 @@ const getFontBasicMetrics = getLookupTableFactory(function (t) {
 
 
 
+
+
 const ON_CURVE_POINT = 1 << 0;
 const X_SHORT_VECTOR = 1 << 1;
 const Y_SHORT_VECTOR = 1 << 2;
@@ -28864,6 +29729,7 @@ class CompositeGlyph {
 
 
 
+
 function writeInt16(dest, offset, num) {
   dest[offset] = num >> 8 & 0xff;
   dest[offset + 1] = num & 0xff;
@@ -28968,6 +29834,7 @@ class OpenTypeFileBuilder {
 }
 
 ;// ./src/core/type1_parser.js
+
 
 
 
@@ -29818,6 +30685,7 @@ class Type1Font {
 }
 
 ;// ./src/core/fonts.js
+
 
 
 
@@ -32309,6 +33177,7 @@ class ErrorFont {
 
 
 
+
 const ShadingType = {
   FUNCTION_BASED: 1,
   AXIAL: 2,
@@ -32408,56 +33277,60 @@ class RadialAxialShading extends BaseShading {
     }
     const color = new Float32Array(cs.numComps),
       ratio = new Float32Array(1);
-    let rgbColor;
     let iBase = 0;
     ratio[0] = t0;
     fn(ratio, 0, color, 0);
-    let rgbBase = cs.getRgb(color, 0);
-    const cssColorBase = Util.makeHexColor(rgbBase[0], rgbBase[1], rgbBase[2]);
-    colorStops.push([0, cssColorBase]);
+    const rgbBuffer = new Uint8ClampedArray(3);
+    cs.getRgb(color, 0, rgbBuffer);
+    let [rBase, gBase, bBase] = rgbBuffer;
+    colorStops.push([0, Util.makeHexColor(rBase, gBase, bBase)]);
     let iPrev = 1;
     ratio[0] = t0 + step;
     fn(ratio, 0, color, 0);
-    let rgbPrev = cs.getRgb(color, 0);
-    let maxSlopeR = rgbPrev[0] - rgbBase[0] + 1;
-    let maxSlopeG = rgbPrev[1] - rgbBase[1] + 1;
-    let maxSlopeB = rgbPrev[2] - rgbBase[2] + 1;
-    let minSlopeR = rgbPrev[0] - rgbBase[0] - 1;
-    let minSlopeG = rgbPrev[1] - rgbBase[1] - 1;
-    let minSlopeB = rgbPrev[2] - rgbBase[2] - 1;
+    cs.getRgb(color, 0, rgbBuffer);
+    let [rPrev, gPrev, bPrev] = rgbBuffer;
+    let maxSlopeR = rPrev - rBase + 1;
+    let maxSlopeG = gPrev - gBase + 1;
+    let maxSlopeB = bPrev - bBase + 1;
+    let minSlopeR = rPrev - rBase - 1;
+    let minSlopeG = gPrev - gBase - 1;
+    let minSlopeB = bPrev - bBase - 1;
     for (let i = 2; i < NUMBER_OF_SAMPLES; i++) {
       ratio[0] = t0 + i * step;
       fn(ratio, 0, color, 0);
-      rgbColor = cs.getRgb(color, 0);
+      cs.getRgb(color, 0, rgbBuffer);
+      const [r, g, b] = rgbBuffer;
       const run = i - iBase;
-      maxSlopeR = Math.min(maxSlopeR, (rgbColor[0] - rgbBase[0] + 1) / run);
-      maxSlopeG = Math.min(maxSlopeG, (rgbColor[1] - rgbBase[1] + 1) / run);
-      maxSlopeB = Math.min(maxSlopeB, (rgbColor[2] - rgbBase[2] + 1) / run);
-      minSlopeR = Math.max(minSlopeR, (rgbColor[0] - rgbBase[0] - 1) / run);
-      minSlopeG = Math.max(minSlopeG, (rgbColor[1] - rgbBase[1] - 1) / run);
-      minSlopeB = Math.max(minSlopeB, (rgbColor[2] - rgbBase[2] - 1) / run);
+      maxSlopeR = Math.min(maxSlopeR, (r - rBase + 1) / run);
+      maxSlopeG = Math.min(maxSlopeG, (g - gBase + 1) / run);
+      maxSlopeB = Math.min(maxSlopeB, (b - bBase + 1) / run);
+      minSlopeR = Math.max(minSlopeR, (r - rBase - 1) / run);
+      minSlopeG = Math.max(minSlopeG, (g - gBase - 1) / run);
+      minSlopeB = Math.max(minSlopeB, (b - bBase - 1) / run);
       const slopesExist = minSlopeR <= maxSlopeR && minSlopeG <= maxSlopeG && minSlopeB <= maxSlopeB;
       if (!slopesExist) {
-        const cssColor = Util.makeHexColor(rgbPrev[0], rgbPrev[1], rgbPrev[2]);
+        const cssColor = Util.makeHexColor(rPrev, gPrev, bPrev);
         colorStops.push([iPrev / NUMBER_OF_SAMPLES, cssColor]);
-        maxSlopeR = rgbColor[0] - rgbPrev[0] + 1;
-        maxSlopeG = rgbColor[1] - rgbPrev[1] + 1;
-        maxSlopeB = rgbColor[2] - rgbPrev[2] + 1;
-        minSlopeR = rgbColor[0] - rgbPrev[0] - 1;
-        minSlopeG = rgbColor[1] - rgbPrev[1] - 1;
-        minSlopeB = rgbColor[2] - rgbPrev[2] - 1;
+        maxSlopeR = r - rPrev + 1;
+        maxSlopeG = g - gPrev + 1;
+        maxSlopeB = b - bPrev + 1;
+        minSlopeR = r - rPrev - 1;
+        minSlopeG = g - gPrev - 1;
+        minSlopeB = b - bPrev - 1;
         iBase = iPrev;
-        rgbBase = rgbPrev;
+        rBase = rPrev;
+        gBase = gPrev;
+        bBase = bPrev;
       }
       iPrev = i;
-      rgbPrev = rgbColor;
+      rPrev = r;
+      gPrev = g;
+      bPrev = b;
     }
-    const cssColor = Util.makeHexColor(rgbPrev[0], rgbPrev[1], rgbPrev[2]);
-    colorStops.push([1, cssColor]);
+    colorStops.push([1, Util.makeHexColor(rPrev, gPrev, bPrev)]);
     let background = "transparent";
     if (dict.has("Background")) {
-      rgbColor = cs.getRgb(dict.get("Background"), 0);
-      background = Util.makeHexColor(rgbColor[0], rgbColor[1], rgbColor[2]);
+      background = cs.getRgbHex(dict.get("Background"), 0);
     }
     if (!extendStart) {
       colorStops.unshift([0, background]);
@@ -33873,6 +34746,7 @@ class GlobalImageCache {
 }
 
 ;// ./src/core/function.js
+
 
 
 
@@ -35328,6 +36202,7 @@ function getFontSubstitution(systemFontCache, idFactory, localFontPath, baseFont
 
 
 
+
 const SEED = 0xc3d2e1f0;
 const MASK_HIGH = 0xffff0000;
 const MASK_LOW = 0xffff;
@@ -35438,6 +36313,7 @@ class MurmurHash3_64 {
 
 
 
+
 function resizeImageMask(src, bpc, w1, h1, w2, h2) {
   const length = w2 * h2;
   let dest;
@@ -35503,11 +36379,18 @@ class PDFImage {
           bitsPerComponent: image.bitsPerComponent
         } = JpxImage.parseImageProperties(image.stream));
         image.stream.reset();
+        const reducePower = ImageResizer.getReducePowerForJPX(image.width, image.height, image.numComps);
         this.jpxDecoderOptions = {
           numComponents: 0,
           isIndexedColormap: false,
-          smaskInData: dict.has("SMaskInData")
+          smaskInData: dict.has("SMaskInData"),
+          reducePower
         };
+        if (reducePower) {
+          const factor = 2 ** reducePower;
+          image.width = Math.ceil(image.width / factor);
+          image.height = Math.ceil(image.height / factor);
+        }
         break;
       case "JBIG2Decode":
         image.bitsPerComponent = 1;
@@ -36263,6 +37146,7 @@ class PDFImage {
 
 
 
+
 const DefaultPartialEvaluatorOptions = Object.freeze({
   maxImageSize: -1,
   disableFontFace: false,
@@ -36595,7 +37479,7 @@ class PartialEvaluator {
       }
       if (smask?.backdrop) {
         colorSpace ||= ColorSpaceUtils.rgb;
-        smask.backdrop = colorSpace.getRgb(smask.backdrop, 0);
+        smask.backdrop = colorSpace.getRgbHex(smask.backdrop, 0);
       }
       operatorList.addOp(OPS.beginGroup, [groupOptions]);
     }
@@ -37304,7 +38188,7 @@ class PartialEvaluator {
       const localTilingPattern = rawPattern instanceof Ref && localTilingPatternCache.getByRef(rawPattern);
       if (localTilingPattern) {
         try {
-          const color = cs.base ? cs.base.getRgb(args, 0) : null;
+          const color = cs.base ? cs.base.getRgbHex(args, 0) : null;
           const tilingPatternIR = getTilingPatternIR(localTilingPattern.operatorListIR, localTilingPattern.dict, color);
           operatorList.addOp(fn, tilingPatternIR);
           return undefined;
@@ -37315,7 +38199,7 @@ class PartialEvaluator {
         const dict = pattern instanceof BaseStream ? pattern.dict : pattern;
         const typeNum = dict.get("PatternType");
         if (typeNum === PatternType.TILING) {
-          const color = cs.base ? cs.base.getRgb(args, 0) : null;
+          const color = cs.base ? cs.base.getRgbHex(args, 0) : null;
           return this.handleTilingType(fn, color, resources, pattern, dict, operatorList, task, localTilingPatternCache);
         } else if (typeNum === PatternType.SHADING) {
           const shading = dict.get("Shading");
@@ -37652,47 +38536,47 @@ class PartialEvaluator {
             }
           case OPS.setFillColor:
             cs = stateManager.state.fillColorSpace;
-            args = cs.getRgb(args, 0);
+            args = [cs.getRgbHex(args, 0)];
             fn = OPS.setFillRGBColor;
             break;
           case OPS.setStrokeColor:
             cs = stateManager.state.strokeColorSpace;
-            args = cs.getRgb(args, 0);
+            args = [cs.getRgbHex(args, 0)];
             fn = OPS.setStrokeRGBColor;
             break;
           case OPS.setFillGray:
             stateManager.state.fillColorSpace = ColorSpaceUtils.gray;
-            args = ColorSpaceUtils.gray.getRgb(args, 0);
+            args = [ColorSpaceUtils.gray.getRgbHex(args, 0)];
             fn = OPS.setFillRGBColor;
             break;
           case OPS.setStrokeGray:
             stateManager.state.strokeColorSpace = ColorSpaceUtils.gray;
-            args = ColorSpaceUtils.gray.getRgb(args, 0);
+            args = [ColorSpaceUtils.gray.getRgbHex(args, 0)];
             fn = OPS.setStrokeRGBColor;
             break;
           case OPS.setFillCMYKColor:
             stateManager.state.fillColorSpace = ColorSpaceUtils.cmyk;
-            args = ColorSpaceUtils.cmyk.getRgb(args, 0);
+            args = [ColorSpaceUtils.cmyk.getRgbHex(args, 0)];
             fn = OPS.setFillRGBColor;
             break;
           case OPS.setStrokeCMYKColor:
             stateManager.state.strokeColorSpace = ColorSpaceUtils.cmyk;
-            args = ColorSpaceUtils.cmyk.getRgb(args, 0);
+            args = [ColorSpaceUtils.cmyk.getRgbHex(args, 0)];
             fn = OPS.setStrokeRGBColor;
             break;
           case OPS.setFillRGBColor:
             stateManager.state.fillColorSpace = ColorSpaceUtils.rgb;
-            args = ColorSpaceUtils.rgb.getRgb(args, 0);
+            args = [ColorSpaceUtils.rgb.getRgbHex(args, 0)];
             break;
           case OPS.setStrokeRGBColor:
             stateManager.state.strokeColorSpace = ColorSpaceUtils.rgb;
-            args = ColorSpaceUtils.rgb.getRgb(args, 0);
+            args = [ColorSpaceUtils.rgb.getRgbHex(args, 0)];
             break;
           case OPS.setFillColorN:
             cs = stateManager.state.patternFillColorSpace;
             if (!cs) {
               if (isNumberArray(args, null)) {
-                args = ColorSpaceUtils.gray.getRgb(args, 0);
+                args = [ColorSpaceUtils.gray.getRgbHex(args, 0)];
                 fn = OPS.setFillRGBColor;
                 break;
               }
@@ -37704,14 +38588,14 @@ class PartialEvaluator {
               next(self.handleColorN(operatorList, OPS.setFillColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache));
               return;
             }
-            args = cs.getRgb(args, 0);
+            args = [cs.getRgbHex(args, 0)];
             fn = OPS.setFillRGBColor;
             break;
           case OPS.setStrokeColorN:
             cs = stateManager.state.patternStrokeColorSpace;
             if (!cs) {
               if (isNumberArray(args, null)) {
-                args = ColorSpaceUtils.gray.getRgb(args, 0);
+                args = [ColorSpaceUtils.gray.getRgbHex(args, 0)];
                 fn = OPS.setStrokeRGBColor;
                 break;
               }
@@ -37723,7 +38607,7 @@ class PartialEvaluator {
               next(self.handleColorN(operatorList, OPS.setStrokeColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache));
               return;
             }
-            args = cs.getRgb(args, 0);
+            args = [cs.getRgbHex(args, 0)];
             fn = OPS.setStrokeRGBColor;
             break;
           case OPS.shadingFill:
@@ -37933,7 +38817,8 @@ class PartialEvaluator {
     markedContentData = null,
     disableNormalization = false,
     keepWhiteSpace = false,
-    prevRefs = null
+    prevRefs = null,
+    intersector = null
   }) {
     const objId = stream.dict?.objId;
     const seenRefs = new RefSet(prevRefs);
@@ -38010,6 +38895,7 @@ class PartialEvaluator {
       transform = textContentItem.prevTransform,
       fontName = textContentItem.fontName
     }) {
+      intersector?.addExtraChar(" ");
       textContent.items.push({
         str: " ",
         dir: "ltr",
@@ -38316,9 +39202,11 @@ class PartialEvaluator {
         }
         if (!font.vertical) {
           scaledDim *= textState.textHScale;
+          intersector?.addGlyph(getCurrentTextTransform(), scaledDim, 0, glyph.unicode);
           textState.translateTextMatrix(scaledDim, 0);
           textChunk.width += scaledDim;
         } else {
+          intersector?.addGlyph(getCurrentTextTransform(), 0, scaledDim, glyph.unicode);
           textState.translateTextMatrix(0, scaledDim);
           scaledDim = Math.abs(scaledDim);
           textChunk.height += scaledDim;
@@ -38329,8 +39217,11 @@ class PartialEvaluator {
         const glyphUnicode = glyph.unicode;
         if (saveLastChar(glyphUnicode)) {
           textChunk.str.push(" ");
+          intersector?.addExtraChar(" ");
         }
-        textChunk.str.push(glyphUnicode);
+        if (!intersector) {
+          textChunk.str.push(glyphUnicode);
+        }
         if (charSpacing) {
           if (!font.vertical) {
             textState.translateTextMatrix(charSpacing * textState.textHScale, 0);
@@ -38341,6 +39232,7 @@ class PartialEvaluator {
       }
     }
     function appendEOL() {
+      intersector?.addExtraChar("\n");
       resetLastChars();
       if (textContentItem.initialized) {
         textContentItem.hasEOL = true;
@@ -38362,6 +39254,7 @@ class PartialEvaluator {
         if (textContentItem.initialized) {
           resetLastChars();
           textContentItem.str.push(" ");
+          intersector?.addExtraChar(" ");
         }
         return false;
       }
@@ -38402,7 +39295,7 @@ class PartialEvaluator {
       if (batch && length < TEXT_CHUNK_BATCH_SIZE) {
         return;
       }
-      sink.enqueue(textContent, length);
+      sink?.enqueue(textContent, length);
       textContent.items = [];
       textContent.styles = Object.create(null);
     }
@@ -38410,7 +39303,7 @@ class PartialEvaluator {
     return new Promise(function promiseBody(resolve, reject) {
       const next = function (promise) {
         enqueueChunk(true);
-        Promise.all([promise, sink.ready]).then(function () {
+        Promise.all([promise, sink?.ready]).then(function () {
           try {
             promiseBody(resolve, reject);
           } catch (ex) {
@@ -38601,7 +39494,7 @@ class PartialEvaluator {
                   sink.enqueue(chunk, size);
                 },
                 get desiredSize() {
-                  return sink.desiredSize;
+                  return sink.desiredSize ?? 0;
                 },
                 get ready() {
                   return sink.ready;
@@ -38613,7 +39506,7 @@ class PartialEvaluator {
                 resources: localResources instanceof Dict ? localResources : resources,
                 stateManager: xObjStateManager,
                 includeMarkedContent,
-                sink: sinkWrapper,
+                sink: sink && sinkWrapper,
                 seenStyles,
                 viewBox,
                 lang,
@@ -38720,7 +39613,7 @@ class PartialEvaluator {
             }
             break;
         }
-        if (textContent.items.length >= sink.desiredSize) {
+        if (textContent.items.length >= (sink?.desiredSize ?? 1)) {
           stop = true;
           break;
         }
@@ -39336,10 +40229,7 @@ class PartialEvaluator {
     const isType3Font = type === "Type3";
     if (!descriptor) {
       if (isType3Font) {
-        const bbox = lookupNormalRect(dict.getArray("FontBBox"), [0, 0, 0, 0]);
-        descriptor = new Dict(null);
-        descriptor.set("FontName", Name.get(type));
-        descriptor.set("FontBBox", bbox);
+        descriptor = Dict.empty;
       } else {
         let baseFontName = dict.get("BaseFont");
         if (!(baseFontName instanceof Name)) {
@@ -39404,13 +40294,17 @@ class PartialEvaluator {
     }
     const fontNameStr = fontName?.name;
     const baseFontStr = baseFont?.name;
-    if (!isType3Font && fontNameStr !== baseFontStr) {
+    if (isType3Font) {
+      if (!fontNameStr) {
+        fontName = Name.get(type);
+      }
+    } else if (fontNameStr !== baseFontStr) {
       info(`The FontDescriptor's FontName is "${fontNameStr}" but ` + `should be the same as the Font's BaseFont "${baseFontStr}".`);
       if (fontNameStr && baseFontStr && (baseFontStr.startsWith(fontNameStr) || !isKnownFontName(fontNameStr) && isKnownFontName(baseFontStr))) {
         fontName = null;
       }
+      fontName ||= baseFont;
     }
-    fontName ||= baseFont;
     if (!(fontName instanceof Name)) {
       throw new FormatError("invalid font name");
     }
@@ -39466,7 +40360,7 @@ class PartialEvaluator {
       }
     }
     const fontMatrix = lookupMatrix(dict.getArray("FontMatrix"), FONT_IDENTITY_MATRIX);
-    const bbox = lookupNormalRect(descriptor.getArray("FontBBox") || dict.getArray("FontBBox"), undefined);
+    const bbox = lookupNormalRect(descriptor.getArray("FontBBox") || dict.getArray("FontBBox"), isType3Font ? [0, 0, 0, 0] : undefined);
     let ascent = descriptor.get("Ascent");
     if (typeof ascent !== "number") {
       ascent = undefined;
@@ -39617,9 +40511,9 @@ class TranslatedFont {
     const charProcs = this.dict.get("CharProcs");
     const fontResources = this.dict.get("Resources") || resources;
     const charProcOperatorList = Object.create(null);
-    const fontBBox = Util.normalizeRect(font.bbox || [0, 0, 0, 0]),
-      width = fontBBox[2] - fontBBox[0],
-      height = fontBBox[3] - fontBBox[1];
+    const [x0, y0, x1, y1] = font.bbox,
+      width = x1 - x0,
+      height = y1 - y0;
     const fontBBoxSize = Math.hypot(width, height);
     for (const key of charProcs.getKeys()) {
       loadCharProcsPromise = loadCharProcsPromise.then(() => {
@@ -40336,6 +41230,7 @@ class EvaluatorPreprocessor {
 
 
 
+
 class DefaultAppearanceEvaluator extends EvaluatorPreprocessor {
   constructor(str) {
     super(new StringStream(str));
@@ -40537,11 +41432,11 @@ class FakeUnicodeFont {
   get fontDescriptorRef() {
     if (!FakeUnicodeFont._fontDescriptorRef) {
       const fontDescriptor = new Dict(this.xref);
-      fontDescriptor.set("Type", Name.get("FontDescriptor"));
+      fontDescriptor.setIfName("Type", "FontDescriptor");
       fontDescriptor.set("FontName", this.fontName);
       fontDescriptor.set("FontFamily", "MyriadPro Regular");
       fontDescriptor.set("FontBBox", [0, 0, 0, 0]);
-      fontDescriptor.set("FontStretch", Name.get("Normal"));
+      fontDescriptor.setIfName("FontStretch", "Normal");
       fontDescriptor.set("FontWeight", 400);
       fontDescriptor.set("ItalicAngle", 0);
       FakeUnicodeFont._fontDescriptorRef = this.xref.getNewPersistentRef(fontDescriptor);
@@ -40551,9 +41446,9 @@ class FakeUnicodeFont {
   get descendantFontRef() {
     const descendantFont = new Dict(this.xref);
     descendantFont.set("BaseFont", this.fontName);
-    descendantFont.set("Type", Name.get("Font"));
-    descendantFont.set("Subtype", Name.get("CIDFontType0"));
-    descendantFont.set("CIDToGIDMap", Name.get("Identity"));
+    descendantFont.setIfName("Type", "Font");
+    descendantFont.setIfName("Subtype", "CIDFontType0");
+    descendantFont.setIfName("CIDToGIDMap", "Identity");
     descendantFont.set("FirstChar", this.firstChar);
     descendantFont.set("LastChar", this.lastChar);
     descendantFont.set("FontDescriptor", this.fontDescriptorRef);
@@ -40590,11 +41485,11 @@ class FakeUnicodeFont {
   get baseFontRef() {
     const baseFont = new Dict(this.xref);
     baseFont.set("BaseFont", this.fontName);
-    baseFont.set("Type", Name.get("Font"));
-    baseFont.set("Subtype", Name.get("Type0"));
-    baseFont.set("Encoding", Name.get("Identity-H"));
+    baseFont.setIfName("Type", "Font");
+    baseFont.setIfName("Subtype", "Type0");
+    baseFont.setIfName("Encoding", "Identity-H");
     baseFont.set("DescendantFonts", [this.descendantFontRef]);
-    baseFont.set("ToUnicode", Name.get("Identity-H"));
+    baseFont.setIfName("ToUnicode", "Identity-H");
     return this.xref.getNewPersistentRef(baseFont);
   }
   get resources() {
@@ -40692,7 +41587,7 @@ class FakeUnicodeFont {
       const r0 = new Dict(this.xref);
       r0.set("ca", strokeAlpha);
       r0.set("CA", strokeAlpha);
-      r0.set("Type", Name.get("ExtGState"));
+      r0.setIfName("Type", "ExtGState");
       extGState.set("R0", r0);
       resources.set("ExtGState", extGState);
     }
@@ -40703,8 +41598,8 @@ class FakeUnicodeFont {
     buffer.push("ET", "Q");
     const appearance = buffer.join("\n");
     const appearanceStreamDict = new Dict(this.xref);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", [0, 0, w, h]);
     appearanceStreamDict.set("Length", appearance.length);
     appearanceStreamDict.set("Resources", resources);
@@ -40717,6 +41612,69 @@ class FakeUnicodeFont {
     return ap;
   }
 }
+
+;// ./src/shared/scripting_utils.js
+
+
+function makeColorComp(n) {
+  return Math.floor(Math.max(0, Math.min(1, n)) * 255).toString(16).padStart(2, "0");
+}
+function scaleAndClamp(x) {
+  return Math.max(0, Math.min(255, 255 * x));
+}
+class ColorConverters {
+  static CMYK_G([c, y, m, k]) {
+    return ["G", 1 - Math.min(1, 0.3 * c + 0.59 * m + 0.11 * y + k)];
+  }
+  static G_CMYK([g]) {
+    return ["CMYK", 0, 0, 0, 1 - g];
+  }
+  static G_RGB([g]) {
+    return ["RGB", g, g, g];
+  }
+  static G_rgb([g]) {
+    g = scaleAndClamp(g);
+    return [g, g, g];
+  }
+  static G_HTML([g]) {
+    const G = makeColorComp(g);
+    return `#${G}${G}${G}`;
+  }
+  static RGB_G([r, g, b]) {
+    return ["G", 0.3 * r + 0.59 * g + 0.11 * b];
+  }
+  static RGB_rgb(color) {
+    return color.map(scaleAndClamp);
+  }
+  static RGB_HTML(color) {
+    return `#${color.map(makeColorComp).join("")}`;
+  }
+  static T_HTML() {
+    return "#00000000";
+  }
+  static T_rgb() {
+    return [null];
+  }
+  static CMYK_RGB([c, y, m, k]) {
+    return ["RGB", 1 - Math.min(1, c + k), 1 - Math.min(1, m + k), 1 - Math.min(1, y + k)];
+  }
+  static CMYK_rgb([c, y, m, k]) {
+    return [scaleAndClamp(1 - Math.min(1, c + k)), scaleAndClamp(1 - Math.min(1, m + k)), scaleAndClamp(1 - Math.min(1, y + k))];
+  }
+  static CMYK_HTML(components) {
+    const rgb = this.CMYK_RGB(components).slice(1);
+    return this.RGB_HTML(rgb);
+  }
+  static RGB_CMYK([r, g, b]) {
+    const c = 1 - r;
+    const m = 1 - g;
+    const y = 1 - b;
+    const k = Math.min(c, m, y);
+    return ["CMYK", c, m, y, k];
+  }
+}
+const DateFormats = ["m/d", "m/d/yy", "mm/dd/yy", "mm/yy", "d-mmm", "d-mmm-yy", "dd-mmm-yy", "yy-mm-dd", "mmm-yy", "mmmm-yy", "mmm d, yyyy", "mmmm d, yyyy", "m/d/yy h:MM tt", "m/d/yy HH:MM"];
+const TimeFormats = ["HH:MM", "h:MM tt", "HH:MM:ss", "h:MM:ss tt"];
 
 ;// ./src/core/name_number_tree.js
 
@@ -40898,7 +41856,7 @@ class FileSpec {
     let filename = "";
     const item = pickPlatformItem(this.root);
     if (item && typeof item === "string") {
-      filename = stringToPDFString(item).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
+      filename = stringToPDFString(item, true).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
     }
     return shadow(this, "filename", filename || "unnamed");
   }
@@ -41554,7 +42512,7 @@ class StructTreeRoot {
     pdfManager,
     changes
   }) {
-    const root = pdfManager.catalog.cloneDict();
+    const root = await pdfManager.ensureCatalog("cloneDict");
     const cache = new RefSetCache();
     cache.put(catalogRef, root);
     const structTreeRootRef = xref.getNewTemporaryRef();
@@ -42254,6 +43212,7 @@ class StructTreePage {
 
 
 
+
 const isRef = v => v instanceof Ref;
 const isValidExplicitDest = _isValidExplicitDest.bind(null, isRef, isName);
 function fetchDest(dest) {
@@ -42269,7 +43228,7 @@ function fetchRemoteDest(action) {
       dest = dest.name;
     }
     if (typeof dest === "string") {
-      return stringToPDFString(dest);
+      return stringToPDFString(dest, true);
     } else if (isValidExplicitDest(dest)) {
       return JSON.stringify(dest);
     }
@@ -42277,31 +43236,32 @@ function fetchRemoteDest(action) {
   return null;
 }
 class Catalog {
+  #actualNumPages = null;
+  #catDict = null;
+  builtInCMapCache = new Map();
+  fontCache = new RefSetCache();
+  globalColorSpaceCache = new GlobalColorSpaceCache();
+  globalImageCache = new GlobalImageCache();
+  nonBlendModesSet = new RefSet();
+  pageDictCache = new RefSetCache();
+  pageIndexCache = new RefSetCache();
+  pageKidsCountCache = new RefSetCache();
+  standardFontDataCache = new Map();
+  systemFontCache = new Map();
   constructor(pdfManager, xref) {
     this.pdfManager = pdfManager;
     this.xref = xref;
-    this._catDict = xref.getCatalogObj();
-    if (!(this._catDict instanceof Dict)) {
+    this.#catDict = xref.getCatalogObj();
+    if (!(this.#catDict instanceof Dict)) {
       throw new FormatError("Catalog object is not a dictionary.");
     }
     this.toplevelPagesDict;
-    this._actualNumPages = null;
-    this.fontCache = new RefSetCache();
-    this.builtInCMapCache = new Map();
-    this.standardFontDataCache = new Map();
-    this.globalColorSpaceCache = new GlobalColorSpaceCache();
-    this.globalImageCache = new GlobalImageCache();
-    this.pageKidsCountCache = new RefSetCache();
-    this.pageIndexCache = new RefSetCache();
-    this.pageDictCache = new RefSetCache();
-    this.nonBlendModesSet = new RefSet();
-    this.systemFontCache = new Map();
   }
   cloneDict() {
-    return this._catDict.clone();
+    return this.#catDict.clone();
   }
   get version() {
-    const version = this._catDict.get("Version");
+    const version = this.#catDict.get("Version");
     if (version instanceof Name) {
       if (PDF_VERSION_REGEXP.test(version.name)) {
         return shadow(this, "version", version.name);
@@ -42311,17 +43271,17 @@ class Catalog {
     return shadow(this, "version", null);
   }
   get lang() {
-    const lang = this._catDict.get("Lang");
+    const lang = this.#catDict.get("Lang");
     return shadow(this, "lang", lang && typeof lang === "string" ? stringToPDFString(lang) : null);
   }
   get needsRendering() {
-    const needsRendering = this._catDict.get("NeedsRendering");
+    const needsRendering = this.#catDict.get("NeedsRendering");
     return shadow(this, "needsRendering", typeof needsRendering === "boolean" ? needsRendering : false);
   }
   get collection() {
     let collection = null;
     try {
-      const obj = this._catDict.get("Collection");
+      const obj = this.#catDict.get("Collection");
       if (obj instanceof Dict && obj.size > 0) {
         collection = obj;
       }
@@ -42336,7 +43296,7 @@ class Catalog {
   get acroForm() {
     let acroForm = null;
     try {
-      const obj = this._catDict.get("AcroForm");
+      const obj = this.#catDict.get("AcroForm");
       if (obj instanceof Dict && obj.size > 0) {
         acroForm = obj;
       }
@@ -42349,11 +43309,11 @@ class Catalog {
     return shadow(this, "acroForm", acroForm);
   }
   get acroFormRef() {
-    const value = this._catDict.getRaw("AcroForm");
+    const value = this.#catDict.getRaw("AcroForm");
     return shadow(this, "acroFormRef", value instanceof Ref ? value : null);
   }
   get metadata() {
-    const streamRef = this._catDict.getRaw("Metadata");
+    const streamRef = this.#catDict.getRaw("Metadata");
     if (!(streamRef instanceof Ref)) {
       return shadow(this, "metadata", null);
     }
@@ -42381,7 +43341,7 @@ class Catalog {
   get markInfo() {
     let markInfo = null;
     try {
-      markInfo = this._readMarkInfo();
+      markInfo = this.#readMarkInfo();
     } catch (ex) {
       if (ex instanceof MissingDataException) {
         throw ex;
@@ -42390,8 +43350,8 @@ class Catalog {
     }
     return shadow(this, "markInfo", markInfo);
   }
-  _readMarkInfo() {
-    const obj = this._catDict.get("MarkInfo");
+  #readMarkInfo() {
+    const obj = this.#catDict.get("MarkInfo");
     if (!(obj instanceof Dict)) {
       return null;
     }
@@ -42421,7 +43381,7 @@ class Catalog {
     return shadow(this, "structTreeRoot", structTree);
   }
   #readStructTreeRoot() {
-    const rawObj = this._catDict.getRaw("StructTreeRoot");
+    const rawObj = this.#catDict.getRaw("StructTreeRoot");
     const obj = this.xref.fetchIfRef(rawObj);
     if (!(obj instanceof Dict)) {
       return null;
@@ -42431,7 +43391,7 @@ class Catalog {
     return root;
   }
   get toplevelPagesDict() {
-    const pagesObj = this._catDict.get("Pages");
+    const pagesObj = this.#catDict.get("Pages");
     if (!(pagesObj instanceof Dict)) {
       throw new FormatError("Invalid top-level pages dictionary.");
     }
@@ -42440,7 +43400,7 @@ class Catalog {
   get documentOutline() {
     let obj = null;
     try {
-      obj = this._readDocumentOutline();
+      obj = this.#readDocumentOutline();
     } catch (ex) {
       if (ex instanceof MissingDataException) {
         throw ex;
@@ -42449,8 +43409,8 @@ class Catalog {
     }
     return shadow(this, "documentOutline", obj);
   }
-  _readDocumentOutline() {
-    let obj = this._catDict.get("Outlines");
+  #readDocumentOutline() {
+    let obj = this.#catDict.get("Outlines");
     if (!(obj instanceof Dict)) {
       return null;
     }
@@ -42535,7 +43495,7 @@ class Catalog {
   get permissions() {
     let permissions = null;
     try {
-      permissions = this._readPermissions();
+      permissions = this.#readPermissions();
     } catch (ex) {
       if (ex instanceof MissingDataException) {
         throw ex;
@@ -42544,7 +43504,7 @@ class Catalog {
     }
     return shadow(this, "permissions", permissions);
   }
-  _readPermissions() {
+  #readPermissions() {
     const encrypt = this.xref.trailer.get("Encrypt");
     if (!(encrypt instanceof Dict)) {
       return null;
@@ -42566,7 +43526,7 @@ class Catalog {
   get optionalContentConfig() {
     let config = null;
     try {
-      const properties = this._catDict.get("OCProperties");
+      const properties = this.#catDict.get("OCProperties");
       if (!properties) {
         return shadow(this, "optionalContentConfig", null);
       }
@@ -42751,10 +43711,10 @@ class Catalog {
     };
   }
   setActualNumPages(num = null) {
-    this._actualNumPages = num;
+    this.#actualNumPages = num;
   }
   get hasActualNumPages() {
-    return this._actualNumPages !== null;
+    return this.#actualNumPages !== null;
   }
   get _pagesCount() {
     const obj = this.toplevelPagesDict.get("Count");
@@ -42764,7 +43724,7 @@ class Catalog {
     return shadow(this, "_pagesCount", obj);
   }
   get numPages() {
-    return this.hasActualNumPages ? this._actualNumPages : this._pagesCount;
+    return this.#actualNumPages ?? this._pagesCount;
   }
   get destinations() {
     const rawDests = this.#readDests(),
@@ -42774,14 +43734,14 @@ class Catalog {
         for (const [key, value] of obj.getAll()) {
           const dest = fetchDest(value);
           if (dest) {
-            dests[stringToPDFString(key)] = dest;
+            dests[stringToPDFString(key, true)] = dest;
           }
         }
       } else if (obj instanceof Dict) {
         for (const [key, value] of obj) {
           const dest = fetchDest(value);
           if (dest) {
-            dests[stringToPDFString(key)] ||= dest;
+            dests[stringToPDFString(key, true)] ||= dest;
           }
         }
       }
@@ -42789,6 +43749,9 @@ class Catalog {
     return shadow(this, "destinations", dests);
   }
   getDestination(id) {
+    if (this.hasOwnProperty("destinations")) {
+      return this.destinations[id] ?? null;
+    }
     const rawDests = this.#readDests();
     for (const obj of rawDests) {
       if (obj instanceof NameTree || obj instanceof Dict) {
@@ -42807,20 +43770,20 @@ class Catalog {
     return null;
   }
   #readDests() {
-    const obj = this._catDict.get("Names");
+    const obj = this.#catDict.get("Names");
     const rawDests = [];
     if (obj?.has("Dests")) {
       rawDests.push(new NameTree(obj.getRaw("Dests"), this.xref));
     }
-    if (this._catDict.has("Dests")) {
-      rawDests.push(this._catDict.get("Dests"));
+    if (this.#catDict.has("Dests")) {
+      rawDests.push(this.#catDict.get("Dests"));
     }
     return rawDests;
   }
   get pageLabels() {
     let obj = null;
     try {
-      obj = this._readPageLabels();
+      obj = this.#readPageLabels();
     } catch (ex) {
       if (ex instanceof MissingDataException) {
         throw ex;
@@ -42829,8 +43792,8 @@ class Catalog {
     }
     return shadow(this, "pageLabels", obj);
   }
-  _readPageLabels() {
-    const obj = this._catDict.getRaw("PageLabels");
+  #readPageLabels() {
+    const obj = this.#catDict.getRaw("PageLabels");
     if (!obj) {
       return null;
     }
@@ -42908,7 +43871,7 @@ class Catalog {
     return pageLabels;
   }
   get pageLayout() {
-    const obj = this._catDict.get("PageLayout");
+    const obj = this.#catDict.get("PageLayout");
     let pageLayout = "";
     if (obj instanceof Name) {
       switch (obj.name) {
@@ -42924,7 +43887,7 @@ class Catalog {
     return shadow(this, "pageLayout", pageLayout);
   }
   get pageMode() {
-    const obj = this._catDict.get("PageMode");
+    const obj = this.#catDict.get("PageMode");
     let pageMode = "UseNone";
     if (obj instanceof Name) {
       switch (obj.name) {
@@ -42940,7 +43903,7 @@ class Catalog {
     return shadow(this, "pageMode", pageMode);
   }
   get viewerPreferences() {
-    const obj = this._catDict.get("ViewerPreferences");
+    const obj = this.#catDict.get("ViewerPreferences");
     if (!(obj instanceof Dict)) {
       return shadow(this, "viewerPreferences", null);
     }
@@ -43055,7 +44018,7 @@ class Catalog {
     return shadow(this, "viewerPreferences", prefs);
   }
   get openAction() {
-    const obj = this._catDict.get("OpenAction");
+    const obj = this.#catDict.get("OpenAction");
     const openAction = Object.create(null);
     if (obj instanceof Dict) {
       const destDict = new Dict(this.xref);
@@ -43074,38 +44037,40 @@ class Catalog {
       } else if (resultObj.action) {
         openAction.action = resultObj.action;
       }
-    } else if (Array.isArray(obj)) {
+    } else if (isValidExplicitDest(obj)) {
       openAction.dest = obj;
     }
     return shadow(this, "openAction", objectSize(openAction) > 0 ? openAction : null);
   }
   get attachments() {
-    const obj = this._catDict.get("Names");
+    const obj = this.#catDict.get("Names");
     let attachments = null;
     if (obj instanceof Dict && obj.has("EmbeddedFiles")) {
       const nameTree = new NameTree(obj.getRaw("EmbeddedFiles"), this.xref);
       for (const [key, value] of nameTree.getAll()) {
         const fs = new FileSpec(value, this.xref);
         attachments ??= Object.create(null);
-        attachments[stringToPDFString(key)] = fs.serializable;
+        attachments[stringToPDFString(key, true)] = fs.serializable;
       }
     }
     return shadow(this, "attachments", attachments);
   }
   get xfaImages() {
-    const obj = this._catDict.get("Names");
+    const obj = this.#catDict.get("Names");
     let xfaImages = null;
     if (obj instanceof Dict && obj.has("XFAImages")) {
       const nameTree = new NameTree(obj.getRaw("XFAImages"), this.xref);
       for (const [key, value] of nameTree.getAll()) {
-        xfaImages ??= new Dict(this.xref);
-        xfaImages.set(stringToPDFString(key), value);
+        if (value instanceof BaseStream) {
+          xfaImages ??= new Map();
+          xfaImages.set(stringToPDFString(key, true), value.getBytes());
+        }
       }
     }
     return shadow(this, "xfaImages", xfaImages);
   }
-  _collectJavaScript() {
-    const obj = this._catDict.get("Names");
+  #collectJavaScript() {
+    const obj = this.#catDict.get("Names");
     let javaScript = null;
     function appendIfJavaScriptDict(name, jsDict) {
       if (!(jsDict instanceof Dict)) {
@@ -43120,7 +44085,7 @@ class Catalog {
       } else if (typeof js !== "string") {
         return;
       }
-      js = stringToPDFString(js).replaceAll("\x00", "");
+      js = stringToPDFString(js, true).replaceAll("\x00", "");
       if (js) {
         (javaScript ||= new Map()).set(name, js);
       }
@@ -43128,18 +44093,18 @@ class Catalog {
     if (obj instanceof Dict && obj.has("JavaScript")) {
       const nameTree = new NameTree(obj.getRaw("JavaScript"), this.xref);
       for (const [key, value] of nameTree.getAll()) {
-        appendIfJavaScriptDict(stringToPDFString(key), value);
+        appendIfJavaScriptDict(stringToPDFString(key, true), value);
       }
     }
-    const openAction = this._catDict.get("OpenAction");
+    const openAction = this.#catDict.get("OpenAction");
     if (openAction) {
       appendIfJavaScriptDict("OpenAction", openAction);
     }
     return javaScript;
   }
   get jsActions() {
-    const javaScript = this._collectJavaScript();
-    let actions = collectActions(this.xref, this._catDict, DocumentActionEventType);
+    const javaScript = this.#collectJavaScript();
+    let actions = collectActions(this.xref, this.#catDict, DocumentActionEventType);
     if (javaScript) {
       actions ||= Object.create(null);
       for (const [key, val] of javaScript) {
@@ -43173,7 +44138,7 @@ class Catalog {
   async getPageDict(pageIndex) {
     const nodesToVisit = [this.toplevelPagesDict];
     const visitedNodes = new RefSet();
-    const pagesRef = this._catDict.getRaw("Pages");
+    const pagesRef = this.#catDict.getRaw("Pages");
     if (pagesRef instanceof Ref) {
       visitedNodes.put(pagesRef);
     }
@@ -43273,7 +44238,7 @@ class Catalog {
       posInKids: 0
     }];
     const visitedNodes = new RefSet();
-    const pagesRef = this._catDict.getRaw("Pages");
+    const pagesRef = this.#catDict.getRaw("Pages");
     if (pagesRef instanceof Ref) {
       visitedNodes.put(pagesRef);
     }
@@ -43435,7 +44400,7 @@ class Catalog {
     return next(pageRef);
   }
   get baseUrl() {
-    const uri = this._catDict.get("URI");
+    const uri = this.#catDict.get("URI");
     if (uri instanceof Dict) {
       const base = uri.get("Base");
       if (typeof base === "string") {
@@ -43539,7 +44504,7 @@ class Catalog {
             const relationship = target.get("R");
             const name = target.get("N");
             if (isName(relationship, "C") && typeof name === "string") {
-              attachment = docAttachments[stringToPDFString(name)];
+              attachment = docAttachments[stringToPDFString(name, true)];
             }
           }
           if (attachment) {
@@ -43594,7 +44559,7 @@ class Catalog {
           } else if (typeof jsAction === "string") {
             js = jsAction;
           }
-          const jsURL = js && recoverJsURL(stringToPDFString(js));
+          const jsURL = js && recoverJsURL(stringToPDFString(js, true));
           if (jsURL) {
             url = jsURL.url;
             resultObj.newWindow = jsURL.newWindow;
@@ -43625,7 +44590,7 @@ class Catalog {
         dest = dest.name;
       }
       if (typeof dest === "string") {
-        resultObj.dest = stringToPDFString(dest);
+        resultObj.dest = stringToPDFString(dest, true);
       } else if (isValidExplicitDest(dest)) {
         resultObj.dest = dest;
       }
@@ -43657,21 +44622,17 @@ function addChildren(node, nodesToVisit) {
   }
 }
 class ObjectLoader {
+  refSet = new RefSet();
   constructor(dict, keys, xref) {
     this.dict = dict;
     this.keys = keys;
     this.xref = xref;
-    this.refSet = null;
   }
   async load() {
-    if (this.xref.stream.isDataLoaded) {
-      return undefined;
-    }
     const {
       keys,
       dict
     } = this;
-    this.refSet = new RefSet();
     const nodesToVisit = [];
     for (const key of keys) {
       const rawValue = dict.getRaw(key);
@@ -43679,9 +44640,10 @@ class ObjectLoader {
         nodesToVisit.push(rawValue);
       }
     }
-    return this._walk(nodesToVisit);
+    await this.#walk(nodesToVisit);
+    this.refSet = null;
   }
-  async _walk(nodesToVisit) {
+  async #walk(nodesToVisit) {
     const nodesToRevisit = [];
     const pendingRequests = [];
     while (nodesToVisit.length) {
@@ -43695,12 +44657,9 @@ class ObjectLoader {
           currentNode = this.xref.fetch(currentNode);
         } catch (ex) {
           if (!(ex instanceof MissingDataException)) {
-            warn(`ObjectLoader._walk - requesting all data: "${ex}".`);
-            this.refSet = null;
-            const {
-              manager
-            } = this.xref.stream;
-            return manager.requestAllChunks();
+            warn(`ObjectLoader.#walk - requesting all data: "${ex}".`);
+            await this.xref.stream.manager.requestAllChunks();
+            return;
           }
           nodesToRevisit.push(currentNode);
           pendingRequests.push({
@@ -43737,10 +44696,15 @@ class ObjectLoader {
           this.refSet.remove(node);
         }
       }
-      return this._walk(nodesToRevisit);
+      await this.#walk(nodesToRevisit);
     }
-    this.refSet = null;
-    return undefined;
+  }
+  static async load(obj, keys, xref) {
+    if (xref.stream.isDataLoaded) {
+      return;
+    }
+    const objLoader = new ObjectLoader(obj, keys, xref);
+    await objLoader.load();
   }
 }
 
@@ -45523,6 +46487,7 @@ class Option10 extends IntegerObject {
 
 
 
+
 function measureToString(m) {
   if (typeof m === "string") {
     return "0px";
@@ -46021,6 +46986,7 @@ function fixURL(str) {
 }
 
 ;// ./src/core/xfa/layout.js
+
 
 
 
@@ -47199,7 +48165,7 @@ class CheckButton extends XFAObject {
     this.margin = null;
   }
   [$toHTML](availableSpace) {
-    const style = toStyle("margin");
+    const style = toStyle(this, "margin");
     const size = measureToString(this.size);
     style.width = style.height = size;
     let type;
@@ -48732,7 +49698,7 @@ class Image extends StringObject {
     if (this.contentType && !MIMES.has(this.contentType.toLowerCase())) {
       return HTMLResult.EMPTY;
     }
-    let buffer = this[$globalData].images && this[$globalData].images.get(this.href);
+    let buffer = this[$globalData].images?.get(this.href);
     if (!buffer && (this.href || !this[$content])) {
       return HTMLResult.EMPTY;
     }
@@ -54375,7 +55341,7 @@ class XFAFactory {
     }
   }
   isValid() {
-    return this.root && this.form;
+    return !!(this.root && this.form);
   }
   _createPagesHelper() {
     const iterator = this.form[$toPages]();
@@ -54495,6 +55461,10 @@ class XFAFactory {
 }
 
 ;// ./src/core/annotation.js
+
+
+
+
 
 
 
@@ -54698,10 +55668,10 @@ class AnnotationFactory {
         case AnnotationEditorType.FREETEXT:
           if (!baseFontRef) {
             const baseFont = new Dict(xref);
-            baseFont.set("BaseFont", Name.get("Helvetica"));
-            baseFont.set("Type", Name.get("Font"));
-            baseFont.set("Subtype", Name.get("Type1"));
-            baseFont.set("Encoding", Name.get("WinAnsiEncoding"));
+            baseFont.setIfName("BaseFont", "Helvetica");
+            baseFont.setIfName("Type", "Font");
+            baseFont.setIfName("Subtype", "Type1");
+            baseFont.setIfName("Encoding", "WinAnsiEncoding");
             baseFontRef = xref.getNewTemporaryRef();
             changes.put(baseFontRef, {
               data: baseFont
@@ -54753,7 +55723,7 @@ class AnnotationFactory {
       }
     }
     return {
-      annotations: await Promise.all(promises)
+      annotations: (await Promise.all(promises)).flat()
     };
   }
   static async printNewAnnotations(annotationGlobals, evaluator, task, annotations, imagePromises) {
@@ -54842,8 +55812,8 @@ function getRgbColor(color, defaultColor = new Uint8ClampedArray(3)) {
       return defaultColor;
   }
 }
-function getPdfColorArray(color) {
-  return Array.from(color, c => c / 255);
+function getPdfColorArray(color, defaultValue = null) {
+  return color && Array.from(color, c => c / 255) || defaultValue;
 }
 function getQuadPoints(dict, rect) {
   const quadPoints = dict.getArray("QuadPoints");
@@ -55178,14 +56148,12 @@ class Annotation {
       this.oc = oc;
     }
   }
-  loadResources(keys, appearance) {
-    return appearance.dict.getAsync("Resources").then(resources => {
-      if (!resources) {
-        return undefined;
-      }
-      const objectLoader = new ObjectLoader(resources, keys, resources.xref);
-      return objectLoader.load().then(() => resources);
-    });
+  async loadResources(keys, appearance) {
+    const resources = await appearance.dict.getAsync("Resources");
+    if (resources) {
+      await ObjectLoader.load(resources, keys, resources.xref);
+    }
+    return resources;
   }
   async getOperatorList(evaluator, task, intent, annotationStorage) {
     const {
@@ -55248,6 +56216,9 @@ class Annotation {
   }
   async save(evaluator, task, annotationStorage, changes) {
     return null;
+  }
+  get overlaysTextContent() {
+    return false;
   }
   get hasTextContent() {
     return false;
@@ -55542,20 +56513,16 @@ class MarkupAnnotation extends Annotation {
     buffer.push("Q");
     const formDict = new Dict(xref);
     const appearanceStreamDict = new Dict(xref);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
     const appearanceStream = new StringStream(buffer.join(" "));
     appearanceStream.dict = appearanceStreamDict;
     formDict.set("Fm0", appearanceStream);
     const gsDict = new Dict(xref);
     if (blendMode) {
-      gsDict.set("BM", Name.get(blendMode));
+      gsDict.setIfName("BM", blendMode);
     }
-    if (typeof strokeAlpha === "number") {
-      gsDict.set("CA", strokeAlpha);
-    }
-    if (typeof fillAlpha === "number") {
-      gsDict.set("ca", fillAlpha);
-    }
+    gsDict.setIfNumber("CA", strokeAlpha);
+    gsDict.setIfNumber("ca", fillAlpha);
     const stateDict = new Dict(xref);
     stateDict.set("GS0", gsDict);
     const resources = new Dict(xref);
@@ -55589,9 +56556,30 @@ class MarkupAnnotation extends Annotation {
     changes.put(annotationRef, {
       data: annotationDict
     });
-    return {
+    const retRef = {
       ref: annotationRef
     };
+    if (annotation.popup) {
+      const popup = annotation.popup;
+      if (popup.deleted) {
+        annotationDict.delete("Popup");
+        annotationDict.delete("Contents");
+        annotationDict.delete("RC");
+        return retRef;
+      }
+      const popupRef = popup.ref ||= xref.getNewTemporaryRef();
+      popup.parent = annotationRef;
+      const popupDict = PopupAnnotation.createNewDict(popup, xref);
+      changes.put(popupRef, {
+        data: popupDict
+      });
+      annotationDict.setIfDefined("Contents", stringToAsciiOrUTF16BE(popup.contents));
+      annotationDict.set("Popup", popupRef);
+      return [retRef, {
+        ref: popupRef
+      }];
+    }
+    return retRef;
   }
   static async createNewPrintAnnotation(annotationGlobals, xref, annotation, params) {
     const ap = await this.createNewAppearanceStream(annotation, xref, params);
@@ -55790,12 +56778,8 @@ class WidgetAnnotation extends Annotation {
     if (rotation) {
       mk.set("R", rotation);
     }
-    if (this.borderColor) {
-      mk.set("BC", getPdfColorArray(this.borderColor));
-    }
-    if (this.backgroundColor) {
-      mk.set("BG", getPdfColorArray(this.backgroundColor));
-    }
+    mk.setIfArray("BC", getPdfColorArray(this.borderColor));
+    mk.setIfArray("BG", getPdfColorArray(this.backgroundColor));
     return mk.size > 0 ? mk : null;
   }
   amendSavedDict(annotationStorage, dict) {}
@@ -55890,9 +56874,10 @@ class WidgetAnnotation extends Annotation {
       const resources = this._getSaveFieldResources(xref);
       const appearanceStream = new StringStream(appearance);
       const appearanceDict = appearanceStream.dict = new Dict(xref);
-      appearanceDict.set("Subtype", Name.get("Form"));
+      appearanceDict.setIfName("Subtype", "Form");
       appearanceDict.set("Resources", resources);
-      appearanceDict.set("BBox", [0, 0, this.width, this.height]);
+      const bbox = rotation % 180 === 0 ? [0, 0, this.width, this.height] : [0, 0, this.height, this.width];
+      appearanceDict.set("BBox", bbox);
       const rotationMatrix = this.getRotationMatrix(annotationStorage);
       if (rotationMatrix !== IDENTITY_MATRIX) {
         appearanceDict.set("Matrix", rotationMatrix);
@@ -56202,6 +57187,58 @@ class TextWidgetAnnotation extends WidgetAnnotation {
     this.data.multiLine = this.hasFieldFlag(AnnotationFieldFlag.MULTILINE);
     this.data.comb = this.hasFieldFlag(AnnotationFieldFlag.COMB) && !this.data.multiLine && !this.data.password && !this.hasFieldFlag(AnnotationFieldFlag.FILESELECT) && this.data.maxLen !== 0;
     this.data.doNotScroll = this.hasFieldFlag(AnnotationFieldFlag.DONOTSCROLL);
+    const {
+      data: {
+        actions
+      }
+    } = this;
+    if (!actions) {
+      return;
+    }
+    const AFDateTime = /^AF(Date|Time)_(?:Keystroke|Format)(?:Ex)?\(['"]?([^'"]+)['"]?\);$/;
+    let canUseHTMLDateTime = false;
+    if (actions.Format?.length === 1 && actions.Keystroke?.length === 1 && AFDateTime.test(actions.Format[0]) && AFDateTime.test(actions.Keystroke[0]) || actions.Format?.length === 0 && actions.Keystroke?.length === 1 && AFDateTime.test(actions.Keystroke[0]) || actions.Keystroke?.length === 0 && actions.Format?.length === 1 && AFDateTime.test(actions.Format[0])) {
+      canUseHTMLDateTime = true;
+    }
+    const actionsToVisit = [];
+    if (actions.Format) {
+      actionsToVisit.push(...actions.Format);
+    }
+    if (actions.Keystroke) {
+      actionsToVisit.push(...actions.Keystroke);
+    }
+    if (canUseHTMLDateTime) {
+      delete actions.Keystroke;
+      actions.Format = actionsToVisit;
+    }
+    for (const formatAction of actionsToVisit) {
+      const m = formatAction.match(AFDateTime);
+      if (!m) {
+        continue;
+      }
+      const isDate = m[1] === "Date";
+      let format = m[2];
+      const num = parseInt(format, 10);
+      if (!isNaN(num) && Math.floor(Math.log10(num)) + 1 === m[2].length) {
+        format = (isDate ? DateFormats : TimeFormats)[num] ?? format;
+      }
+      this.data.datetimeFormat = format;
+      if (!canUseHTMLDateTime) {
+        break;
+      }
+      if (isDate) {
+        if (/HH|MM|ss|h/.test(format)) {
+          this.data.datetimeType = "datetime-local";
+          this.data.timeStep = /ss/.test(format) ? 1 : 60;
+        } else {
+          this.data.datetimeType = "date";
+        }
+        break;
+      }
+      this.data.datetimeType = "time";
+      this.data.timeStep = /ss/.test(format) ? 1 : 60;
+      break;
+    }
   }
   get hasTextContent() {
     return !!this.appearance && !this._needAppearances;
@@ -56321,6 +57358,8 @@ class TextWidgetAnnotation extends WidgetAnnotation {
       strokeColor: this.data.borderColor,
       fillColor: this.data.backgroundColor,
       rotation: this.rotation,
+      datetimeFormat: this.data.datetimeFormat,
+      hasDatetimeHTML: !!this.data.datetimeType,
       type: "text"
     };
   }
@@ -56522,8 +57561,8 @@ class ButtonWidgetAnnotation extends WidgetAnnotation {
     const appearance = `q BT /PdfJsZaDb ${fontSize} Tf 0 g ${xShift} ${yShift} Td (${char}) Tj ET Q`;
     const appearanceStreamDict = new Dict(params.xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", bbox);
     appearanceStreamDict.set("Matrix", [1, 0, 0, 1, 0, 0]);
     appearanceStreamDict.set("Length", appearance.length);
@@ -56550,7 +57589,7 @@ class ButtonWidgetAnnotation extends WidgetAnnotation {
       this.data.fieldValue = asValue;
     }
     const yes = this.data.fieldValue !== null && this.data.fieldValue !== "Off" ? this.data.fieldValue : "Yes";
-    const exportValues = normalAppearance.getKeys();
+    const exportValues = this._decodeFormValue(normalAppearance.getKeys());
     if (exportValues.length === 0) {
       exportValues.push("Off", yes);
     } else if (exportValues.length === 1) {
@@ -56675,10 +57714,10 @@ class ButtonWidgetAnnotation extends WidgetAnnotation {
   }
   get fallbackFontDict() {
     const dict = new Dict();
-    dict.set("BaseFont", Name.get("ZapfDingbats"));
-    dict.set("Type", Name.get("FallbackType"));
-    dict.set("Subtype", Name.get("FallbackType"));
-    dict.set("Encoding", Name.get("ZapfDingbatsEncoding"));
+    dict.setIfName("BaseFont", "ZapfDingbats");
+    dict.setIfName("Type", "FallbackType");
+    dict.setIfName("Subtype", "FallbackType");
+    dict.setIfName("Encoding", "ZapfDingbatsEncoding");
     return shadow(this, "fallbackFontDict", dict);
   }
 }
@@ -56936,6 +57975,9 @@ class LinkAnnotation extends Annotation {
       docAttachments: annotationGlobals.attachments
     });
   }
+  get overlaysTextContent() {
+    return true;
+  }
 }
 class PopupAnnotation extends Annotation {
   constructor(params) {
@@ -56954,6 +57996,7 @@ class PopupAnnotation extends Annotation {
       return;
     }
     this.data.parentRect = lookupNormalRect(parentItem.getArray("Rect"), null);
+    this.data.creationDate = parentItem.get("CreationDate") || "";
     const rt = parentItem.get("RT");
     if (isName(rt, AnnotationReplyType.GROUP)) {
       parentItem = parentItem.get("IRT");
@@ -56984,6 +58027,23 @@ class PopupAnnotation extends Annotation {
       this.data.richText = XFAFactory.getRichTextAsHtml(parentItem.get("RC"));
     }
     this.data.open = !!dict.get("Open");
+  }
+  static createNewDict(annotation, xref, _params) {
+    const {
+      oldAnnotation,
+      rect,
+      parent
+    } = annotation;
+    const popup = oldAnnotation || new Dict(xref);
+    popup.setIfNotExists("Type", Name.get("Annot"));
+    popup.setIfNotExists("Subtype", Name.get("Popup"));
+    popup.setIfNotExists("Open", false);
+    popup.setIfArray("Rect", rect);
+    popup.set("Parent", parent);
+    return popup;
+  }
+  static async createNewAppearanceStream(annotation, xref, params) {
+    return null;
   }
 }
 class FreeTextAnnotation extends MarkupAnnotation {
@@ -57041,6 +58101,7 @@ class FreeTextAnnotation extends MarkupAnnotation {
   }) {
     const {
       color,
+      date,
       fontSize,
       oldAnnotation,
       rect,
@@ -57049,32 +58110,24 @@ class FreeTextAnnotation extends MarkupAnnotation {
       value
     } = annotation;
     const freetext = oldAnnotation || new Dict(xref);
-    freetext.set("Type", Name.get("Annot"));
-    freetext.set("Subtype", Name.get("FreeText"));
+    freetext.setIfNotExists("Type", Name.get("Annot"));
+    freetext.setIfNotExists("Subtype", Name.get("FreeText"));
+    freetext.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate(date)}`);
     if (oldAnnotation) {
-      freetext.set("M", `D:${getModificationDate()}`);
       freetext.delete("RC");
-    } else {
-      freetext.set("CreationDate", `D:${getModificationDate()}`);
     }
-    freetext.set("Rect", rect);
+    freetext.setIfArray("Rect", rect);
     const da = `/Helv ${fontSize} Tf ${getPdfColor(color, true)}`;
     freetext.set("DA", da);
-    freetext.set("Contents", stringToAsciiOrUTF16BE(value));
-    freetext.set("F", 4);
-    freetext.set("Border", [0, 0, 0]);
-    freetext.set("Rotate", rotation);
-    if (user) {
-      freetext.set("T", stringToAsciiOrUTF16BE(user));
-    }
+    freetext.setIfDefined("Contents", stringToAsciiOrUTF16BE(value));
+    freetext.setIfNotExists("F", 4);
+    freetext.setIfNotExists("Border", [0, 0, 0]);
+    freetext.setIfNumber("Rotate", rotation);
+    freetext.setIfDefined("T", stringToAsciiOrUTF16BE(user));
     if (apRef || ap) {
       const n = new Dict(xref);
       freetext.set("AP", n);
-      if (apRef) {
-        n.set("N", apRef);
-      } else {
-        n.set("N", ap);
-      }
+      n.set("N", apRef || ap);
     }
     return freetext;
   }
@@ -57091,16 +58144,19 @@ class FreeTextAnnotation extends MarkupAnnotation {
       rotation,
       value
     } = annotation;
+    if (!color) {
+      return null;
+    }
     const resources = new Dict(xref);
     const font = new Dict(xref);
     if (baseFontRef) {
       font.set("Helv", baseFontRef);
     } else {
       const baseFont = new Dict(xref);
-      baseFont.set("BaseFont", Name.get("Helvetica"));
-      baseFont.set("Type", Name.get("Font"));
-      baseFont.set("Subtype", Name.get("Type1"));
-      baseFont.set("Encoding", Name.get("WinAnsiEncoding"));
+      baseFont.setIfName("BaseFont", "Helvetica");
+      baseFont.setIfName("Type", "Font");
+      baseFont.setIfName("Subtype", "Type1");
+      baseFont.setIfName("Encoding", "WinAnsiEncoding");
       font.set("Helv", baseFont);
     }
     resources.set("Font", font);
@@ -57179,8 +58235,8 @@ class FreeTextAnnotation extends MarkupAnnotation {
     const appearance = buffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", rect);
     appearanceStreamDict.set("Resources", resources);
     appearanceStreamDict.set("Matrix", [1, 0, 0, 1, -rect[0], -rect[1]]);
@@ -57204,10 +58260,10 @@ class LineAnnotation extends MarkupAnnotation {
     this.setLineEndings(dict.getArray("LE"));
     this.data.lineEndings = this.lineEndings;
     if (!this.appearance) {
-      const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+      const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
       const strokeAlpha = dict.get("CA");
       const interiorColor = getRgbColor(dict.getArray("IC"), null);
-      const fillColor = interiorColor ? getPdfColorArray(interiorColor) : null;
+      const fillColor = getPdfColorArray(interiorColor);
       const fillAlpha = fillColor ? strokeAlpha : null;
       const borderWidth = this.borderStyle.width || 1,
         borderAdjust = 2 * borderWidth;
@@ -57241,10 +58297,10 @@ class SquareAnnotation extends MarkupAnnotation {
     this.data.hasOwnCanvas = this.data.noRotate;
     this.data.noHTML = false;
     if (!this.appearance) {
-      const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+      const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
       const strokeAlpha = dict.get("CA");
       const interiorColor = getRgbColor(dict.getArray("IC"), null);
-      const fillColor = interiorColor ? getPdfColorArray(interiorColor) : null;
+      const fillColor = getPdfColorArray(interiorColor);
       const fillAlpha = fillColor ? strokeAlpha : null;
       if (this.borderStyle.width === 0 && !fillColor) {
         return;
@@ -57282,10 +58338,10 @@ class CircleAnnotation extends MarkupAnnotation {
     } = params;
     this.data.annotationType = AnnotationType.CIRCLE;
     if (!this.appearance) {
-      const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+      const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
       const strokeAlpha = dict.get("CA");
       const interiorColor = getRgbColor(dict.getArray("IC"), null);
-      const fillColor = interiorColor ? getPdfColorArray(interiorColor) : null;
+      const fillColor = getPdfColorArray(interiorColor);
       const fillAlpha = fillColor ? strokeAlpha : null;
       if (this.borderStyle.width === 0 && !fillColor) {
         return;
@@ -57340,8 +58396,22 @@ class PolylineAnnotation extends MarkupAnnotation {
     }
     const vertices = this.data.vertices = Float32Array.from(rawVertices);
     if (!this.appearance) {
-      const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+      const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
       const strokeAlpha = dict.get("CA");
+      let fillColor = getRgbColor(dict.getArray("IC"), null);
+      if (fillColor) {
+        fillColor = getPdfColorArray(fillColor);
+      }
+      let operator;
+      if (fillColor) {
+        if (this.color) {
+          operator = fillColor.every((c, i) => c === strokeColor[i]) ? "f" : "B";
+        } else {
+          operator = "f";
+        }
+      } else {
+        operator = "S";
+      }
       const borderWidth = this.borderStyle.width || 1,
         borderAdjust = 2 * borderWidth;
       const bbox = [Infinity, Infinity, -Infinity, -Infinity];
@@ -57356,11 +58426,13 @@ class PolylineAnnotation extends MarkupAnnotation {
         extra: `${borderWidth} w`,
         strokeColor,
         strokeAlpha,
+        fillColor,
+        fillAlpha: fillColor ? strokeAlpha : null,
         pointsCallback: (buffer, points) => {
           for (let i = 0, ii = vertices.length; i < ii; i += 2) {
             buffer.push(`${vertices[i]} ${vertices[i + 1]} ${i === 0 ? "m" : "l"}`);
           }
-          buffer.push("S");
+          buffer.push(operator);
           return [points[0], points[7], points[2], points[3]];
         }
       });
@@ -57413,7 +58485,7 @@ class InkAnnotation extends MarkupAnnotation {
       }
     }
     if (!this.appearance) {
-      const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+      const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
       const strokeAlpha = dict.get("CA");
       const borderWidth = this.borderStyle.width || 1,
         borderAdjust = 2 * borderWidth;
@@ -57450,6 +58522,7 @@ class InkAnnotation extends MarkupAnnotation {
     const {
       oldAnnotation,
       color,
+      date,
       opacity,
       paths,
       outlines,
@@ -57459,30 +58532,28 @@ class InkAnnotation extends MarkupAnnotation {
       user
     } = annotation;
     const ink = oldAnnotation || new Dict(xref);
-    ink.set("Type", Name.get("Annot"));
-    ink.set("Subtype", Name.get("Ink"));
-    ink.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate()}`);
-    ink.set("Rect", rect);
-    ink.set("InkList", outlines?.points || paths.points);
-    ink.set("F", 4);
-    ink.set("Rotate", rotation);
-    if (user) {
-      ink.set("T", stringToAsciiOrUTF16BE(user));
-    }
+    ink.setIfNotExists("Type", Name.get("Annot"));
+    ink.setIfNotExists("Subtype", Name.get("Ink"));
+    ink.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate(date)}`);
+    ink.setIfArray("Rect", rect);
+    ink.setIfArray("InkList", outlines?.points || paths?.points);
+    ink.setIfNotExists("F", 4);
+    ink.setIfNumber("Rotate", rotation);
+    ink.setIfDefined("T", stringToAsciiOrUTF16BE(user));
     if (outlines) {
-      ink.set("IT", Name.get("InkHighlight"));
+      ink.setIfName("IT", "InkHighlight");
     }
-    const bs = new Dict(xref);
-    ink.set("BS", bs);
-    bs.set("W", thickness);
-    ink.set("C", getPdfColorArray(color));
-    ink.set("CA", opacity);
-    const n = new Dict(xref);
-    ink.set("AP", n);
-    if (apRef) {
-      n.set("N", apRef);
-    } else {
-      n.set("N", ap);
+    if (thickness > 0) {
+      const bs = new Dict(xref);
+      ink.set("BS", bs);
+      bs.set("W", thickness);
+    }
+    ink.setIfArray("C", getPdfColorArray(color));
+    ink.setIfNumber("CA", opacity);
+    if (ap || apRef) {
+      const n = new Dict(xref);
+      ink.set("AP", n);
+      n.set("N", apRef || ap);
     }
     return ink;
   }
@@ -57497,6 +58568,9 @@ class InkAnnotation extends MarkupAnnotation {
       thickness,
       opacity
     } = annotation;
+    if (!color) {
+      return null;
+    }
     const appearanceBuffer = [`${thickness} w 1 J 1 j`, `${getPdfColor(color, false)}`];
     if (opacity !== 1) {
       appearanceBuffer.push("/R0 gs");
@@ -57519,8 +58593,8 @@ class InkAnnotation extends MarkupAnnotation {
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", rect);
     appearanceStreamDict.set("Length", appearance.length);
     if (opacity !== 1) {
@@ -57528,7 +58602,7 @@ class InkAnnotation extends MarkupAnnotation {
       const extGState = new Dict(xref);
       const r0 = new Dict(xref);
       r0.set("CA", opacity);
-      r0.set("Type", Name.get("ExtGState"));
+      r0.setIfName("Type", "ExtGState");
       extGState.set("R0", r0);
       resources.set("ExtGState", extGState);
       appearanceStreamDict.set("Resources", resources);
@@ -57546,6 +58620,9 @@ class InkAnnotation extends MarkupAnnotation {
       },
       opacity
     } = annotation;
+    if (!color) {
+      return null;
+    }
     const appearanceBuffer = [`${getPdfColor(color, true)}`, "/R0 gs"];
     appearanceBuffer.push(`${numberToString(outline[4])} ${numberToString(outline[5])} m`);
     for (let i = 6, ii = outline.length; i < ii; i += 6) {
@@ -57560,8 +58637,8 @@ class InkAnnotation extends MarkupAnnotation {
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", rect);
     appearanceStreamDict.set("Length", appearance.length);
     const resources = new Dict(xref);
@@ -57570,10 +58647,10 @@ class InkAnnotation extends MarkupAnnotation {
     appearanceStreamDict.set("Resources", resources);
     const r0 = new Dict(xref);
     extGState.set("R0", r0);
-    r0.set("BM", Name.get("Multiply"));
+    r0.setIfName("BM", "Multiply");
     if (opacity !== 1) {
       r0.set("ca", opacity);
-      r0.set("Type", Name.get("ExtGState"));
+      r0.setIfName("Type", "ExtGState");
     }
     const ap = new StringStream(appearance);
     ap.dict = appearanceStreamDict;
@@ -57598,7 +58675,7 @@ class HighlightAnnotation extends MarkupAnnotation {
         if (this.appearance) {
           warn("HighlightAnnotation - ignoring built-in appearance stream.");
         }
-        const fillColor = this.color ? getPdfColorArray(this.color) : [1, 1, 0];
+        const fillColor = getPdfColorArray(this.color, [1, 1, 0]);
         const fillAlpha = dict.get("CA");
         this._setDefaultAppearance({
           xref,
@@ -57615,12 +58692,16 @@ class HighlightAnnotation extends MarkupAnnotation {
       this.data.popupRef = null;
     }
   }
+  get overlaysTextContent() {
+    return true;
+  }
   static createNewDict(annotation, xref, {
     apRef,
     ap
   }) {
     const {
       color,
+      date,
       oldAnnotation,
       opacity,
       rect,
@@ -57629,20 +58710,17 @@ class HighlightAnnotation extends MarkupAnnotation {
       quadPoints
     } = annotation;
     const highlight = oldAnnotation || new Dict(xref);
-    highlight.set("Type", Name.get("Annot"));
-    highlight.set("Subtype", Name.get("Highlight"));
-    highlight.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate()}`);
-    highlight.set("CreationDate", `D:${getModificationDate()}`);
-    highlight.set("Rect", rect);
-    highlight.set("F", 4);
-    highlight.set("Border", [0, 0, 0]);
-    highlight.set("Rotate", rotation);
-    highlight.set("QuadPoints", quadPoints);
-    highlight.set("C", getPdfColorArray(color));
-    highlight.set("CA", opacity);
-    if (user) {
-      highlight.set("T", stringToAsciiOrUTF16BE(user));
-    }
+    highlight.setIfNotExists("Type", Name.get("Annot"));
+    highlight.setIfNotExists("Subtype", Name.get("Highlight"));
+    highlight.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate(date)}`);
+    highlight.setIfArray("Rect", rect);
+    highlight.setIfNotExists("F", 4);
+    highlight.setIfNotExists("Border", [0, 0, 0]);
+    highlight.setIfNumber("Rotate", rotation);
+    highlight.setIfArray("QuadPoints", quadPoints);
+    highlight.setIfArray("C", getPdfColorArray(color));
+    highlight.setIfNumber("CA", opacity);
+    highlight.setIfDefined("T", stringToAsciiOrUTF16BE(user));
     if (apRef || ap) {
       const n = new Dict(xref);
       highlight.set("AP", n);
@@ -57657,6 +58735,9 @@ class HighlightAnnotation extends MarkupAnnotation {
       outlines,
       opacity
     } = annotation;
+    if (!color) {
+      return null;
+    }
     const appearanceBuffer = [`${getPdfColor(color, true)}`, "/R0 gs"];
     const buffer = [];
     for (const outline of outlines) {
@@ -57672,8 +58753,8 @@ class HighlightAnnotation extends MarkupAnnotation {
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", rect);
     appearanceStreamDict.set("Length", appearance.length);
     const resources = new Dict(xref);
@@ -57682,10 +58763,10 @@ class HighlightAnnotation extends MarkupAnnotation {
     appearanceStreamDict.set("Resources", resources);
     const r0 = new Dict(xref);
     extGState.set("R0", r0);
-    r0.set("BM", Name.get("Multiply"));
+    r0.setIfName("BM", "Multiply");
     if (opacity !== 1) {
       r0.set("ca", opacity);
-      r0.set("Type", Name.get("ExtGState"));
+      r0.setIfName("Type", "ExtGState");
     }
     const ap = new StringStream(appearance);
     ap.dict = appearanceStreamDict;
@@ -57703,7 +58784,7 @@ class UnderlineAnnotation extends MarkupAnnotation {
     const quadPoints = this.data.quadPoints = getQuadPoints(dict, null);
     if (quadPoints) {
       if (!this.appearance) {
-        const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+        const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
         const strokeAlpha = dict.get("CA");
         this._setDefaultAppearance({
           xref,
@@ -57720,6 +58801,9 @@ class UnderlineAnnotation extends MarkupAnnotation {
       this.data.popupRef = null;
     }
   }
+  get overlaysTextContent() {
+    return true;
+  }
 }
 class SquigglyAnnotation extends MarkupAnnotation {
   constructor(params) {
@@ -57732,7 +58816,7 @@ class SquigglyAnnotation extends MarkupAnnotation {
     const quadPoints = this.data.quadPoints = getQuadPoints(dict, null);
     if (quadPoints) {
       if (!this.appearance) {
-        const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+        const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
         const strokeAlpha = dict.get("CA");
         this._setDefaultAppearance({
           xref,
@@ -57760,6 +58844,9 @@ class SquigglyAnnotation extends MarkupAnnotation {
       this.data.popupRef = null;
     }
   }
+  get overlaysTextContent() {
+    return true;
+  }
 }
 class StrikeOutAnnotation extends MarkupAnnotation {
   constructor(params) {
@@ -57772,7 +58859,7 @@ class StrikeOutAnnotation extends MarkupAnnotation {
     const quadPoints = this.data.quadPoints = getQuadPoints(dict, null);
     if (quadPoints) {
       if (!this.appearance) {
-        const strokeColor = this.color ? getPdfColorArray(this.color) : [0, 0, 0];
+        const strokeColor = getPdfColorArray(this.color, [0, 0, 0]);
         const strokeAlpha = dict.get("CA");
         this._setDefaultAppearance({
           xref,
@@ -57788,6 +58875,9 @@ class StrikeOutAnnotation extends MarkupAnnotation {
     } else {
       this.data.popupRef = null;
     }
+  }
+  get overlaysTextContent() {
+    return true;
   }
 }
 class StampAnnotation extends MarkupAnnotation {
@@ -57842,8 +58932,8 @@ class StampAnnotation extends MarkupAnnotation {
     image.set("Type", xobjectName);
     image.set("Subtype", imageName);
     image.set("BitsPerComponent", 8);
-    image.set("ColorSpace", Name.get("DeviceRGB"));
-    image.set("Filter", Name.get("DCTDecode"));
+    image.setIfName("ColorSpace", "DeviceRGB");
+    image.setIfName("Filter", "DCTDecode");
     image.set("BBox", [0, 0, width, height]);
     image.set("Width", width);
     image.set("Height", height);
@@ -57863,7 +58953,7 @@ class StampAnnotation extends MarkupAnnotation {
       smask.set("Type", xobjectName);
       smask.set("Subtype", imageName);
       smask.set("BitsPerComponent", 8);
-      smask.set("ColorSpace", Name.get("DeviceGray"));
+      smask.setIfName("ColorSpace", "DeviceGray");
       smask.set("Width", width);
       smask.set("Height", height);
       smaskStream = new Stream(alphaBuffer, 0, 0, smask);
@@ -57881,30 +58971,25 @@ class StampAnnotation extends MarkupAnnotation {
     ap
   }) {
     const {
+      date,
       oldAnnotation,
       rect,
       rotation,
       user
     } = annotation;
     const stamp = oldAnnotation || new Dict(xref);
-    stamp.set("Type", Name.get("Annot"));
-    stamp.set("Subtype", Name.get("Stamp"));
-    stamp.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate()}`);
-    stamp.set("Rect", rect);
-    stamp.set("F", 4);
-    stamp.set("Border", [0, 0, 0]);
-    stamp.set("Rotate", rotation);
-    if (user) {
-      stamp.set("T", stringToAsciiOrUTF16BE(user));
-    }
+    stamp.setIfNotExists("Type", Name.get("Annot"));
+    stamp.setIfNotExists("Subtype", Name.get("Stamp"));
+    stamp.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate(date)}`);
+    stamp.setIfArray("Rect", rect);
+    stamp.setIfNotExists("F", 4);
+    stamp.setIfNotExists("Border", [0, 0, 0]);
+    stamp.setIfNumber("Rotate", rotation);
+    stamp.setIfDefined("T", stringToAsciiOrUTF16BE(user));
     if (apRef || ap) {
       const n = new Dict(xref);
       stamp.set("AP", n);
-      if (apRef) {
-        n.set("N", apRef);
-      } else {
-        n.set("N", ap);
-      }
+      n.set("N", apRef || ap);
     }
     return stamp;
   }
@@ -57916,6 +59001,9 @@ class StampAnnotation extends MarkupAnnotation {
       lines,
       thickness
     } = annotation;
+    if (!color) {
+      return null;
+    }
     const appearanceBuffer = [`${thickness} w 1 J 1 j`, `${getPdfColor(color, areContours)}`];
     for (const line of lines) {
       appearanceBuffer.push(`${numberToString(line[4])} ${numberToString(line[5])} m`);
@@ -57935,8 +59023,8 @@ class StampAnnotation extends MarkupAnnotation {
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", rect);
     appearanceStreamDict.set("Length", appearance.length);
     const ap = new StringStream(appearance);
@@ -57965,8 +59053,8 @@ class StampAnnotation extends MarkupAnnotation {
     const appearance = `q ${width} 0 0 ${height} 0 0 cm /Im0 Do Q`;
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);
-    appearanceStreamDict.set("Subtype", Name.get("Form"));
-    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.setIfName("Subtype", "Form");
+    appearanceStreamDict.setIfName("Type", "XObject");
     appearanceStreamDict.set("BBox", [0, 0, width, height]);
     appearanceStreamDict.set("Resources", resources);
     if (rotation) {
@@ -57998,6 +59086,7 @@ class FileAttachmentAnnotation extends MarkupAnnotation {
 }
 
 ;// ./src/core/calculate_md5.js
+
 
 
 
@@ -58140,7 +59229,151 @@ class DatasetReader {
   }
 }
 
+;// ./src/core/intersector.js
+
+
+
+
+
+
+
+
+class SingleIntersector {
+  #annotation;
+  #minX = Infinity;
+  #minY = Infinity;
+  #maxX = -Infinity;
+  #maxY = -Infinity;
+  #quadPoints = null;
+  #text = [];
+  #extraChars = [];
+  #lastIntersectingQuadIndex = -1;
+  #canTakeExtraChars = false;
+  constructor(annotation) {
+    this.#annotation = annotation;
+    const quadPoints = annotation.data.quadPoints;
+    if (!quadPoints) {
+      [this.#minX, this.#minY, this.#maxX, this.#maxY] = annotation.data.rect;
+      return;
+    }
+    for (let i = 0, ii = quadPoints.length; i < ii; i += 8) {
+      this.#minX = Math.min(this.#minX, quadPoints[i]);
+      this.#maxX = Math.max(this.#maxX, quadPoints[i + 2]);
+      this.#minY = Math.min(this.#minY, quadPoints[i + 5]);
+      this.#maxY = Math.max(this.#maxY, quadPoints[i + 1]);
+    }
+    if (quadPoints.length > 8) {
+      this.#quadPoints = quadPoints;
+    }
+  }
+  overlaps(other) {
+    return !(this.#minX >= other.#maxX || this.#maxX <= other.#minX || this.#minY >= other.#maxY || this.#maxY <= other.#minY);
+  }
+  #intersects(x, y) {
+    if (this.#minX >= x || this.#maxX <= x || this.#minY >= y || this.#maxY <= y) {
+      return false;
+    }
+    const quadPoints = this.#quadPoints;
+    if (!quadPoints) {
+      return true;
+    }
+    if (this.#lastIntersectingQuadIndex >= 0) {
+      const i = this.#lastIntersectingQuadIndex;
+      if (!(quadPoints[i] >= x || quadPoints[i + 2] <= x || quadPoints[i + 5] >= y || quadPoints[i + 1] <= y)) {
+        return true;
+      }
+      this.#lastIntersectingQuadIndex = -1;
+    }
+    for (let i = 0, ii = quadPoints.length; i < ii; i += 8) {
+      if (!(quadPoints[i] >= x || quadPoints[i + 2] <= x || quadPoints[i + 5] >= y || quadPoints[i + 1] <= y)) {
+        this.#lastIntersectingQuadIndex = i;
+        return true;
+      }
+    }
+    return false;
+  }
+  addGlyph(x, y, glyph) {
+    if (!this.#intersects(x, y)) {
+      this.disableExtraChars();
+      return false;
+    }
+    if (this.#extraChars.length > 0) {
+      this.#text.push(this.#extraChars.join(""));
+      this.#extraChars.length = 0;
+    }
+    this.#text.push(glyph);
+    this.#canTakeExtraChars = true;
+    return true;
+  }
+  addExtraChar(char) {
+    if (this.#canTakeExtraChars) {
+      this.#extraChars.push(char);
+    }
+  }
+  disableExtraChars() {
+    if (!this.#canTakeExtraChars) {
+      return;
+    }
+    this.#canTakeExtraChars = false;
+    this.#extraChars.length = 0;
+  }
+  setText() {
+    this.#annotation.data.overlaidText = this.#text.join("");
+  }
+}
+class Intersector {
+  #intersectors = new Map();
+  constructor(annotations) {
+    for (const annotation of annotations) {
+      if (!annotation.data.quadPoints && !annotation.data.rect) {
+        continue;
+      }
+      const intersector = new SingleIntersector(annotation);
+      for (const [otherIntersector, overlapping] of this.#intersectors) {
+        if (otherIntersector.overlaps(intersector)) {
+          if (!overlapping) {
+            this.#intersectors.set(otherIntersector, new Set([intersector]));
+          } else {
+            overlapping.add(intersector);
+          }
+        }
+      }
+      this.#intersectors.set(intersector, null);
+    }
+  }
+  addGlyph(transform, width, height, glyph) {
+    const x = transform[4] + width / 2;
+    const y = transform[5] + height / 2;
+    let overlappingIntersectors;
+    for (const [intersector, overlapping] of this.#intersectors) {
+      if (overlappingIntersectors) {
+        if (overlappingIntersectors.has(intersector)) {
+          intersector.addGlyph(x, y, glyph);
+        } else {
+          intersector.disableExtraChars();
+        }
+        continue;
+      }
+      if (!intersector.addGlyph(x, y, glyph)) {
+        continue;
+      }
+      overlappingIntersectors = overlapping;
+    }
+  }
+  addExtraChar(char) {
+    for (const intersector of this.#intersectors.keys()) {
+      intersector.addExtraChar(char);
+    }
+  }
+  setText() {
+    for (const intersector of this.#intersectors.keys()) {
+      intersector.setText();
+    }
+  }
+}
+
 ;// ./src/core/calculate_sha_other.js
+
 
 
 
@@ -58423,6 +59656,7 @@ function calculateSHA384(data, offset, length) {
 
 
 
+
 const calculate_sha256_PARAMS = {
   get k() {
     return shadow(this, "k", [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
@@ -58558,6 +59792,8 @@ class DecryptStream extends DecodeStream {
 }
 
 ;// ./src/core/crypto.js
+
+
 
 
 
@@ -59369,6 +60605,7 @@ class CipherTransformFactory {
 
 
 
+
 class XRef {
   #firstXRefStmPos = null;
   constructor(stream, pdfManager) {
@@ -60054,6 +61291,10 @@ class XRef {
         throw new FormatError(`invalid object offset in the ObjStm stream: ${offset}`);
       }
       nums[i] = num;
+      const entry = this.getEntry(num);
+      if (entry?.offset === tableOffset && entry.gen !== i) {
+        entry.gen = i;
+      }
       offsets[i] = offset;
     }
     const start = (stream.start || 0) + first;
@@ -60146,8 +61387,11 @@ class XRef {
 
 
 
+
+
 const LETTER_SIZE_MEDIABOX = [0, 0, 612, 792];
 class Page {
+  #resourcesPromise = null;
   constructor({
     pdfManager,
     xref,
@@ -60177,7 +61421,6 @@ class Page {
     this.systemFontCache = systemFontCache;
     this.nonBlendModesSet = nonBlendModesSet;
     this.evaluatorOptions = pdfManager.evaluatorOptions;
-    this.resourcesPromise = null;
     this.xfaFactory = xfaFactory;
     const idCounters = {
       obj: 0
@@ -60191,7 +61434,22 @@ class Page {
       }
     };
   }
-  _getInheritableProperty(key, getArray = false) {
+  #createPartialEvaluator(handler) {
+    return new PartialEvaluator({
+      xref: this.xref,
+      handler,
+      pageIndex: this.pageIndex,
+      idFactory: this._localIdFactory,
+      fontCache: this.fontCache,
+      builtInCMapCache: this.builtInCMapCache,
+      standardFontDataCache: this.standardFontDataCache,
+      globalColorSpaceCache: this.globalColorSpaceCache,
+      globalImageCache: this.globalImageCache,
+      systemFontCache: this.systemFontCache,
+      options: this.evaluatorOptions
+    });
+  }
+  #getInheritableProperty(key, getArray = false) {
     const value = getInheritableProperty({
       dict: this.pageDict,
       key,
@@ -60213,14 +61471,14 @@ class Page {
     return this.pageDict.getArray("Contents");
   }
   get resources() {
-    const resources = this._getInheritableProperty("Resources");
+    const resources = this.#getInheritableProperty("Resources");
     return shadow(this, "resources", resources instanceof Dict ? resources : Dict.empty);
   }
-  _getBoundingBox(name) {
+  #getBoundingBox(name) {
     if (this.xfaData) {
       return this.xfaData.bbox;
     }
-    const box = lookupNormalRect(this._getInheritableProperty(name, true), null);
+    const box = lookupNormalRect(this.#getInheritableProperty(name, true), null);
     if (box) {
       if (box[2] - box[0] > 0 && box[3] - box[1] > 0) {
         return box;
@@ -60230,10 +61488,10 @@ class Page {
     return null;
   }
   get mediaBox() {
-    return shadow(this, "mediaBox", this._getBoundingBox("MediaBox") || LETTER_SIZE_MEDIABOX);
+    return shadow(this, "mediaBox", this.#getBoundingBox("MediaBox") || LETTER_SIZE_MEDIABOX);
   }
   get cropBox() {
-    return shadow(this, "cropBox", this._getBoundingBox("CropBox") || this.mediaBox);
+    return shadow(this, "cropBox", this.#getBoundingBox("CropBox") || this.mediaBox);
   }
   get userUnit() {
     const obj = this.pageDict.get("UserUnit");
@@ -60254,7 +61512,7 @@ class Page {
     return shadow(this, "view", mediaBox);
   }
   get rotate() {
-    let rotate = this._getInheritableProperty("Rotate") || 0;
+    let rotate = this.#getInheritableProperty("Rotate") || 0;
     if (rotate % 90 !== 0) {
       rotate = 0;
     } else if (rotate >= 360) {
@@ -60264,7 +61522,7 @@ class Page {
     }
     return shadow(this, "rotate", rotate);
   }
-  _onSubStreamError(reason, objId) {
+  #onSubStreamError(reason, objId) {
     if (this.evaluatorOptions.ignoreErrors) {
       warn(`getContentStream - ignoring sub-stream (${objId}): "${reason}".`);
       return;
@@ -60277,7 +61535,7 @@ class Page {
       return content;
     }
     if (Array.isArray(content)) {
-      return new StreamsSequenceStream(content, this._onSubStreamError.bind(this));
+      return new StreamsSequenceStream(content, this.#onSubStreamError.bind(this));
     }
     return new NullStream();
   }
@@ -60305,6 +61563,12 @@ class Page {
           }
           continue;
         }
+        if (annotation.popup?.deleted) {
+          const popupRef = Ref.fromString(annotation.popupRef);
+          if (popupRef) {
+            deletedAnnotations.put(popupRef, popupRef);
+          }
+        }
         existingAnnotations?.put(ref);
         annotation.ref = ref;
         promises.push(this.xref.fetchAsync(ref).then(obj => {
@@ -60323,19 +61587,7 @@ class Page {
     if (this.xfaFactory) {
       throw new Error("XFA: Cannot save new annotations.");
     }
-    const partialEvaluator = new PartialEvaluator({
-      xref: this.xref,
-      handler,
-      pageIndex: this.pageIndex,
-      idFactory: this._localIdFactory,
-      fontCache: this.fontCache,
-      builtInCMapCache: this.builtInCMapCache,
-      standardFontDataCache: this.standardFontDataCache,
-      globalColorSpaceCache: this.globalColorSpaceCache,
-      globalImageCache: this.globalImageCache,
-      systemFontCache: this.systemFontCache,
-      options: this.evaluatorOptions
-    });
+    const partialEvaluator = this.#createPartialEvaluator(handler);
     const deletedAnnotations = new RefSetCache();
     const existingAnnotations = new RefSet();
     await this.#replaceIdByRef(annotations, deletedAnnotations, existingAnnotations);
@@ -60361,19 +61613,7 @@ class Page {
     }
   }
   async save(handler, task, annotationStorage, changes) {
-    const partialEvaluator = new PartialEvaluator({
-      xref: this.xref,
-      handler,
-      pageIndex: this.pageIndex,
-      idFactory: this._localIdFactory,
-      fontCache: this.fontCache,
-      builtInCMapCache: this.builtInCMapCache,
-      standardFontDataCache: this.standardFontDataCache,
-      globalColorSpaceCache: this.globalColorSpaceCache,
-      globalImageCache: this.globalImageCache,
-      systemFontCache: this.systemFontCache,
-      options: this.evaluatorOptions
-    });
+    const partialEvaluator = this.#createPartialEvaluator(handler);
     const annotations = await this._parsedAnnotations;
     const promises = [];
     for (const annotation of annotations) {
@@ -60385,17 +61625,15 @@ class Page {
     return Promise.all(promises);
   }
   async loadResources(keys) {
-    await (this.resourcesPromise ??= this.pdfManager.ensure(this, "resources"));
-    const objectLoader = new ObjectLoader(this.resources, keys, this.xref);
-    await objectLoader.load();
+    await (this.#resourcesPromise ??= this.pdfManager.ensure(this, "resources"));
+    await ObjectLoader.load(this.resources, keys, this.xref);
   }
   async #getMergedResources(streamDict, keys) {
     const localResources = streamDict?.get("Resources");
     if (!(localResources instanceof Dict && localResources.size)) {
       return this.resources;
     }
-    const objectLoader = new ObjectLoader(localResources, keys, this.xref);
-    await objectLoader.load();
+    await ObjectLoader.load(localResources, keys, this.xref);
     return Dict.merge({
       xref: this.xref,
       dictArray: [localResources, this.resources],
@@ -60413,19 +61651,7 @@ class Page {
   }) {
     const contentStreamPromise = this.getContentStream();
     const resourcesPromise = this.loadResources(RESOURCES_KEYS_OPERATOR_LIST);
-    const partialEvaluator = new PartialEvaluator({
-      xref: this.xref,
-      handler,
-      pageIndex: this.pageIndex,
-      idFactory: this._localIdFactory,
-      fontCache: this.fontCache,
-      builtInCMapCache: this.builtInCMapCache,
-      standardFontDataCache: this.standardFontDataCache,
-      globalColorSpaceCache: this.globalColorSpaceCache,
-      globalImageCache: this.globalImageCache,
-      systemFontCache: this.systemFontCache,
-      options: this.evaluatorOptions
-    });
+    const partialEvaluator = this.#createPartialEvaluator(handler);
     const newAnnotsByPage = !this.xfaFactory ? getNewAnnotationsMap(annotationStorage) : null;
     const newAnnots = newAnnotsByPage?.get(this.pageIndex);
     let newAnnotationsPromise = Promise.resolve(null);
@@ -60548,26 +61774,15 @@ class Page {
     task,
     includeMarkedContent,
     disableNormalization,
-    sink
+    sink,
+    intersector = null
   }) {
     const contentStreamPromise = this.getContentStream();
     const resourcesPromise = this.loadResources(RESOURCES_KEYS_TEXT_CONTENT);
     const langPromise = this.pdfManager.ensureCatalog("lang");
     const [contentStream,, lang] = await Promise.all([contentStreamPromise, resourcesPromise, langPromise]);
     const resources = await this.#getMergedResources(contentStream.dict, RESOURCES_KEYS_TEXT_CONTENT);
-    const partialEvaluator = new PartialEvaluator({
-      xref: this.xref,
-      handler,
-      pageIndex: this.pageIndex,
-      idFactory: this._localIdFactory,
-      fontCache: this.fontCache,
-      builtInCMapCache: this.builtInCMapCache,
-      standardFontDataCache: this.standardFontDataCache,
-      globalColorSpaceCache: this.globalColorSpaceCache,
-      globalImageCache: this.globalImageCache,
-      systemFontCache: this.systemFontCache,
-      options: this.evaluatorOptions
-    });
+    const partialEvaluator = this.#createPartialEvaluator(handler);
     return partialEvaluator.getTextContent({
       stream: contentStream,
       task,
@@ -60576,7 +61791,8 @@ class Page {
       disableNormalization,
       sink,
       viewBox: this.view,
-      lang
+      lang,
+      intersector
     });
   }
   async getStructTree() {
@@ -60610,35 +61826,41 @@ class Page {
     const intentAny = !!(intent & RenderingIntentFlag.ANY),
       intentDisplay = !!(intent & RenderingIntentFlag.DISPLAY),
       intentPrint = !!(intent & RenderingIntentFlag.PRINT);
+    const highlightedAnnotations = [];
     for (const annotation of annotations) {
       const isVisible = intentAny || intentDisplay && annotation.viewable;
       if (isVisible || intentPrint && annotation.printable) {
         annotationsData.push(annotation.data);
       }
       if (annotation.hasTextContent && isVisible) {
-        partialEvaluator ||= new PartialEvaluator({
-          xref: this.xref,
-          handler,
-          pageIndex: this.pageIndex,
-          idFactory: this._localIdFactory,
-          fontCache: this.fontCache,
-          builtInCMapCache: this.builtInCMapCache,
-          standardFontDataCache: this.standardFontDataCache,
-          globalColorSpaceCache: this.globalColorSpaceCache,
-          globalImageCache: this.globalImageCache,
-          systemFontCache: this.systemFontCache,
-          options: this.evaluatorOptions
-        });
+        partialEvaluator ??= this.#createPartialEvaluator(handler);
         textContentPromises.push(annotation.extractTextContent(partialEvaluator, task, [-Infinity, -Infinity, Infinity, Infinity]).catch(function (reason) {
           warn(`getAnnotationsData - ignoring textContent during "${task.name}" task: "${reason}".`);
         }));
+      } else if (annotation.overlaysTextContent && isVisible) {
+        highlightedAnnotations.push(annotation);
       }
+    }
+    if (highlightedAnnotations.length > 0) {
+      const intersector = new Intersector(highlightedAnnotations);
+      textContentPromises.push(this.extractTextContent({
+        handler,
+        task,
+        includeMarkedContent: false,
+        disableNormalization: false,
+        sink: null,
+        viewBox: this.view,
+        lang: null,
+        intersector
+      }).then(() => {
+        intersector.setText();
+      }));
     }
     await Promise.all(textContentPromises);
     return annotationsData;
   }
   get annotations() {
-    const annots = this._getInheritableProperty("Annots");
+    const annots = this.#getInheritableProperty("Annots");
     return shadow(this, "annotations", Array.isArray(annots) ? annots : []);
   }
   get _parsedAnnotations() {
@@ -60730,6 +61952,8 @@ function find(stream, signature, limit = 1024, backwards = false) {
   return false;
 }
 class PDFDocument {
+  #pagePromises = new Map();
+  #version = null;
   constructor(pdfManager, stream) {
     if (stream.length <= 0) {
       throw new InvalidPDFException("The PDF file is empty, i.e. its size is zero bytes.");
@@ -60737,8 +61961,6 @@ class PDFDocument {
     this.pdfManager = pdfManager;
     this.stream = stream;
     this.xref = new XRef(stream, pdfManager);
-    this._pagePromises = new Map();
-    this._version = null;
     const idCounters = {
       font: 0
     };
@@ -60833,7 +62055,7 @@ class PDFDocument {
       version += String.fromCharCode(ch);
     }
     if (PDF_VERSION_REGEXP.test(version)) {
-      this._version = version;
+      this.#version = version;
     } else {
       warn(`Invalid PDF header version: ${version}`);
     }
@@ -60854,7 +62076,7 @@ class PDFDocument {
     }
     return shadow(this, "numPages", num);
   }
-  _hasOnlyDocumentSignatures(fields, recursionDepth = 0) {
+  #hasOnlyDocumentSignatures(fields, recursionDepth = 0) {
     const RECURSION_LIMIT = 10;
     if (!Array.isArray(fields)) {
       return false;
@@ -60866,16 +62088,50 @@ class PDFDocument {
       }
       if (field.has("Kids")) {
         if (++recursionDepth > RECURSION_LIMIT) {
-          warn("_hasOnlyDocumentSignatures: maximum recursion depth reached");
+          warn("#hasOnlyDocumentSignatures: maximum recursion depth reached");
           return false;
         }
-        return this._hasOnlyDocumentSignatures(field.get("Kids"), recursionDepth);
+        return this.#hasOnlyDocumentSignatures(field.get("Kids"), recursionDepth);
       }
       const isSignature = isName(field.get("FT"), "Sig");
       const rectangle = field.get("Rect");
       const isInvisible = Array.isArray(rectangle) && rectangle.every(value => value === 0);
       return isSignature && isInvisible;
     });
+  }
+  #collectSignatureCertificates(fields, collectedSignatureCertificates, visited = new RefSet()) {
+    if (!Array.isArray(fields)) {
+      return;
+    }
+    for (let field of fields) {
+      if (field instanceof Ref) {
+        if (visited.has(field)) {
+          continue;
+        }
+        visited.put(field);
+      }
+      field = this.xref.fetchIfRef(field);
+      if (!(field instanceof Dict)) {
+        continue;
+      }
+      if (field.has("Kids")) {
+        this.#collectSignatureCertificates(field.get("Kids"), collectedSignatureCertificates, visited);
+        continue;
+      }
+      const isSignature = isName(field.get("FT"), "Sig");
+      if (!isSignature) {
+        continue;
+      }
+      const value = field.get("V");
+      if (!(value instanceof Dict)) {
+        continue;
+      }
+      const subFilter = value.get("SubFilter");
+      if (!(subFilter instanceof Name)) {
+        continue;
+      }
+      collectedSignatureCertificates.add(subFilter.name);
+    }
   }
   get _xfaStreams() {
     const {
@@ -60968,24 +62224,14 @@ class PDFDocument {
   get htmlForXfa() {
     return this.xfaFactory ? this.xfaFactory.getPages() : null;
   }
-  async loadXfaImages() {
-    const xfaImagesDict = await this.pdfManager.ensureCatalog("xfaImages");
-    if (!xfaImagesDict) {
+  async #loadXfaImages() {
+    const xfaImages = await this.pdfManager.ensureCatalog("xfaImages");
+    if (!xfaImages) {
       return;
-    }
-    const keys = xfaImagesDict.getKeys();
-    const objectLoader = new ObjectLoader(xfaImagesDict, keys, this.xref);
-    await objectLoader.load();
-    const xfaImages = new Map();
-    for (const key of keys) {
-      const stream = xfaImagesDict.get(key);
-      if (stream instanceof BaseStream) {
-        xfaImages.set(key, stream.getBytes());
-      }
     }
     this.xfaFactory.setImages(xfaImages);
   }
-  async loadXfaFonts(handler, task) {
+  async #loadXfaFonts(handler, task) {
     const acroForm = await this.pdfManager.ensureCatalog("acroForm");
     if (!acroForm) {
       return;
@@ -60994,22 +62240,27 @@ class PDFDocument {
     if (!(resources instanceof Dict)) {
       return;
     }
-    const objectLoader = new ObjectLoader(resources, ["Font"], this.xref);
-    await objectLoader.load();
+    await ObjectLoader.load(resources, ["Font"], this.xref);
     const fontRes = resources.get("Font");
     if (!(fontRes instanceof Dict)) {
       return;
     }
-    const options = Object.assign(Object.create(null), this.pdfManager.evaluatorOptions);
-    options.useSystemFonts = false;
+    const options = Object.assign(Object.create(null), this.pdfManager.evaluatorOptions, {
+      useSystemFonts: false
+    });
+    const {
+      builtInCMapCache,
+      fontCache,
+      standardFontDataCache
+    } = this.catalog;
     const partialEvaluator = new PartialEvaluator({
       xref: this.xref,
       handler,
       pageIndex: -1,
       idFactory: this._globalIdFactory,
-      fontCache: this.catalog.fontCache,
-      builtInCMapCache: this.catalog.builtInCMapCache,
-      standardFontDataCache: this.catalog.standardFontDataCache,
+      fontCache,
+      builtInCMapCache,
+      standardFontDataCache,
       options
     });
     const operatorList = new OperatorList();
@@ -61025,6 +62276,10 @@ class PDFDocument {
         return this;
       }
     };
+    const parseFont = (fontName, fallbackFontDict, cssFontInfo) => partialEvaluator.handleSetFont(resources, [Name.get(fontName), 1], null, operatorList, task, initialState, fallbackFontDict, cssFontInfo).catch(reason => {
+      warn(`loadXfaFonts: "${reason}".`);
+      return null;
+    });
     const promises = [];
     for (const [fontName, font] of fontRes) {
       const descriptor = font.get("FontDescriptor");
@@ -61043,10 +62298,7 @@ class PDFDocument {
       if (!validateCSSFont(cssFontInfo)) {
         continue;
       }
-      promises.push(partialEvaluator.handleSetFont(resources, [Name.get(fontName), 1], null, operatorList, task, initialState, null, cssFontInfo).catch(function (reason) {
-        warn(`loadXfaFonts: "${reason}".`);
-        return null;
-      }));
+      promises.push(parseFont(fontName, null, cssFontInfo));
     }
     await Promise.all(promises);
     const missingFonts = this.xfaFactory.setFonts(pdfFonts);
@@ -61087,25 +62339,24 @@ class PDFDocument {
         italicAngle: 12
       }]) {
         const name = `${missing}-${fontInfo.name}`;
-        const dict = getXfaFontDict(name);
-        promises.push(partialEvaluator.handleSetFont(resources, [Name.get(name), 1], null, operatorList, task, initialState, dict, {
+        promises.push(parseFont(name, getXfaFontDict(name), {
           fontFamily: missing,
           fontWeight: fontInfo.fontWeight,
           italicAngle: fontInfo.italicAngle
-        }).catch(function (reason) {
-          warn(`loadXfaFonts: "${reason}".`);
-          return null;
         }));
       }
     }
     await Promise.all(promises);
     this.xfaFactory.appendFonts(pdfFonts, reallyMissingFonts);
   }
-  async serializeXfaData(annotationStorage) {
+  loadXfaResources(handler, task) {
+    return Promise.all([this.#loadXfaFonts(handler, task).catch(() => {}), this.#loadXfaImages()]);
+  }
+  serializeXfaData(annotationStorage) {
     return this.xfaFactory ? this.xfaFactory.serializeData(annotationStorage) : null;
   }
   get version() {
-    return this.catalog.version || this._version;
+    return this.catalog.version || this.#version;
   }
   get formInfo() {
     const formInfo = {
@@ -61114,7 +62365,9 @@ class PDFDocument {
       hasXfa: false,
       hasSignatures: false
     };
-    const acroForm = this.catalog.acroForm;
+    const {
+      acroForm
+    } = this.catalog;
     if (!acroForm) {
       return shadow(this, "formInfo", formInfo);
     }
@@ -61126,7 +62379,7 @@ class PDFDocument {
       formInfo.hasXfa = Array.isArray(xfa) && xfa.length > 0 || xfa instanceof BaseStream && !xfa.isEmpty;
       const sigFlags = acroForm.get("SigFlags");
       const hasSignatures = !!(sigFlags & 0x1);
-      const hasOnlyDocumentSignatures = hasSignatures && this._hasOnlyDocumentSignatures(fields);
+      const hasOnlyDocumentSignatures = hasSignatures && this.#hasOnlyDocumentSignatures(fields);
       formInfo.hasAcroForm = hasFields && !hasOnlyDocumentSignatures;
       formInfo.hasSignatures = hasSignatures;
     } catch (ex) {
@@ -61138,19 +62391,24 @@ class PDFDocument {
     return shadow(this, "formInfo", formInfo);
   }
   get documentInfo() {
+    const {
+      catalog,
+      formInfo,
+      xref
+    } = this;
     const docInfo = {
       PDFFormatVersion: this.version,
-      Language: this.catalog.lang,
-      EncryptFilterName: this.xref.encrypt ? this.xref.encrypt.filterName : null,
+      Language: catalog.lang,
+      EncryptFilterName: xref.encrypt?.filterName ?? null,
       IsLinearized: !!this.linearization,
-      IsAcroFormPresent: this.formInfo.hasAcroForm,
-      IsXFAPresent: this.formInfo.hasXfa,
-      IsCollectionPresent: !!this.catalog.collection,
-      IsSignaturesPresent: this.formInfo.hasSignatures
+      IsAcroFormPresent: formInfo.hasAcroForm,
+      IsXFAPresent: formInfo.hasXfa,
+      IsCollectionPresent: !!catalog.collection,
+      IsSignaturesPresent: formInfo.hasSignatures
     };
     let infoDict;
     try {
-      infoDict = this.xref.trailer.get("Info");
+      infoDict = xref.trailer.get("Info");
     } catch (err) {
       if (err instanceof MissingDataException) {
         throw err;
@@ -61227,7 +62485,7 @@ class PDFDocument {
     }
     return shadow(this, "fingerprints", [toHexUtil(hashOriginal), hashModified ? toHexUtil(hashModified) : null]);
   }
-  async _getLinearizationPage(pageIndex) {
+  async #getLinearizationPage(pageIndex) {
     const {
       catalog,
       linearization,
@@ -61258,7 +62516,7 @@ class PDFDocument {
     }
   }
   getPage(pageIndex) {
-    const cachedPromise = this._pagePromises.get(pageIndex);
+    const cachedPromise = this.#pagePromises.get(pageIndex);
     if (cachedPromise) {
       return cachedPromise;
     }
@@ -61271,7 +62529,7 @@ class PDFDocument {
     if (xfaFactory) {
       promise = Promise.resolve([Dict.empty, null]);
     } else if (linearization?.pageFirst === pageIndex) {
-      promise = this._getLinearizationPage(pageIndex);
+      promise = this.#getLinearizationPage(pageIndex);
     } else {
       promise = catalog.getPageDict(pageIndex);
     }
@@ -61291,7 +62549,7 @@ class PDFDocument {
       nonBlendModesSet: catalog.nonBlendModesSet,
       xfaFactory
     }));
-    this._pagePromises.set(pageIndex, promise);
+    this.#pagePromises.set(pageIndex, promise);
     return promise;
   }
   async checkFirstPage(recoveryMode = false) {
@@ -61302,7 +62560,7 @@ class PDFDocument {
       await this.getPage(0);
     } catch (reason) {
       if (reason instanceof XRefEntryException) {
-        this._pagePromises.delete(0);
+        this.#pagePromises.delete(0);
         await this.cleanup();
         throw new XRefParseException();
       }
@@ -61331,7 +62589,7 @@ class PDFDocument {
       }
       await this.getPage(numPages - 1);
     } catch (reason) {
-      this._pagePromises.delete(numPages - 1);
+      this.#pagePromises.delete(numPages - 1);
       await this.cleanup();
       if (reason instanceof XRefEntryException && !recoveryMode) {
         throw new XRefParseException();
@@ -61370,7 +62628,7 @@ class PDFDocument {
             xfaFactory: null
           }));
         }
-        this._pagePromises.set(pageIndex, promise);
+        this.#pagePromises.set(pageIndex, promise);
       }
       catalog.setActualNumPages(pagesTree.size);
     }
@@ -61456,15 +62714,18 @@ class PDFDocument {
       if (!formInfo.hasFields) {
         return null;
       }
-      const [annotationGlobals, acroForm] = await Promise.all([this.pdfManager.ensureDoc("annotationGlobals"), this.pdfManager.ensureCatalog("acroForm")]);
+      const annotationGlobals = await this.annotationGlobals;
       if (!annotationGlobals) {
         return null;
       }
+      const {
+        acroForm
+      } = annotationGlobals;
       const visitedRefs = new RefSet();
       const allFields = Object.create(null);
       const fieldPromises = new Map();
       const orphanFields = new RefSetCache();
-      for (const fieldRef of await acroForm.getAsync("Fields")) {
+      for (const fieldRef of acroForm.get("Fields")) {
         await this.#collectFieldObjects("", null, fieldRef, fieldPromises, annotationGlobals, visitedRefs, orphanFields);
       }
       const allPromises = [];
@@ -61573,9 +62834,6 @@ class BasePdfManager {
   get docBaseUrl() {
     return this._docBaseUrl;
   }
-  get catalog() {
-    return this.pdfDocument.catalog;
-  }
   ensureDoc(prop, args) {
     return this.ensure(this.pdfDocument, prop, args);
   }
@@ -61590,15 +62848,6 @@ class BasePdfManager {
   }
   fontFallback(id, handler) {
     return this.pdfDocument.fontFallback(id, handler);
-  }
-  loadXfaFonts(handler, task) {
-    return this.pdfDocument.loadXfaFonts(handler, task);
-  }
-  loadXfaImages() {
-    return this.pdfDocument.loadXfaImages();
-  }
-  serializeXfaData(annotationStorage) {
-    return this.pdfDocument.serializeXfaData(annotationStorage);
   }
   cleanup(manuallyTriggered = false) {
     return this.pdfDocument.cleanup(manuallyTriggered);
@@ -62109,6 +63358,8 @@ class MessageHandler {
 
 
 
+
+
 async function writeObject(ref, obj, buffer, {
   encrypt = null
 }) {
@@ -62317,7 +63568,7 @@ function updateXFA({
   }
   const xfaDataStream = new StringStream(xfaData);
   xfaDataStream.dict = new Dict(xref);
-  xfaDataStream.dict.set("Type", Name.get("EmbeddedFile"));
+  xfaDataStream.dict.setIfName("Type", "EmbeddedFile");
   changes.put(xfaDatasetsRef, {
     data: xfaDataStream
   });
@@ -62413,7 +63664,7 @@ function getTrailerDict(xrefInfo, changes, useXrefStream) {
       data: ""
     });
     newXref.set("Size", refForXrefTable.num + 1);
-    newXref.set("Type", Name.get("XRef"));
+    newXref.setIfName("Type", "XRef");
   } else {
     newXref.set("Size", refForXrefTable.num);
   }
@@ -62647,6 +63898,7 @@ class PDFWorkerStreamRangeReader {
 
 
 
+
 class WorkerTask {
   constructor(name) {
     this.name = name;
@@ -62698,7 +63950,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.2.133";
+    const workerVersion = "5.4.54";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
@@ -62731,9 +63983,10 @@ class WorkerMessageHandler {
       await pdfManager.ensureDoc("checkLastPage", [recoveryMode]);
       const isPureXfa = await pdfManager.ensureDoc("isPureXfa");
       if (isPureXfa) {
-        const task = new WorkerTask("loadXfaFonts");
+        const task = new WorkerTask("loadXfaResources");
         startWorkerTask(task);
-        await Promise.all([pdfManager.loadXfaFonts(handler, task).catch(reason => {}).then(() => finishWorkerTask(task)), pdfManager.loadXfaImages()]);
+        await pdfManager.ensureDoc("loadXfaResources", [handler, task]);
+        finishWorkerTask(task);
       }
       const [numPages, fingerprints] = await Promise.all([pdfManager.ensureDoc("numPages"), pdfManager.ensureDoc("fingerprints")]);
       const htmlForXfa = isPureXfa ? await pdfManager.ensureDoc("htmlForXfa") : null;
@@ -63047,7 +64300,7 @@ class WorkerMessageHandler {
         }
       }
       if (isPureXfa) {
-        promises.push(pdfManager.serializeXfaData(annotationStorage));
+        promises.push(pdfManager.ensureDoc("serializeXfaData", [annotationStorage]));
       } else {
         for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
           promises.push(pdfManager.getPage(pageIndex).then(function (page) {
@@ -63230,8 +64483,6 @@ class WorkerMessageHandler {
 
 ;// ./src/pdf.worker.js
 
-const pdfjsVersion = "5.2.133";
-const pdfjsBuild = "4f7761353";
 globalThis.pdfjsWorker = {
   WorkerMessageHandler: WorkerMessageHandler
 };

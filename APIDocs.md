@@ -44,6 +44,8 @@
         *   [Parameters](#parameters-6)
     *   [rotateAllPages](#rotateallpages)
         *   [Parameters](#parameters-7)
+    *   [rotatePages](#rotatepages)
+        *   [Parameters](#parameters-8)
     *   [toggleFullScreen](#togglefullscreen)
 *   [PdfJs](#pdfjs)
     *   [TypedArray](#typedarray)
@@ -502,6 +504,14 @@ Rotates current page by delta degree.
 ### rotateAllPages
 
 Rotates all pages by delta degree.
+
+#### Parameters
+
+*   `delta` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The degree to add to the rotation.
+
+### rotatePages
+
+Rotates all pages or current page according to current rotation mode, by delta degree.
 
 #### Parameters
 

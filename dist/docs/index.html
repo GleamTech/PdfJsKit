@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset='utf-8'>
-  <title>pdfjskit 2.2.3 | Documentation</title>
+  <title>pdfjskit 2.4.0 | Documentation</title>
   <meta name='description' content='PdfJsKit is a PDF Viewer built on top of PDF.js, with modern UI and new features which supports integration for all JS frameworks.'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' rel='stylesheet'>
@@ -16,7 +16,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>pdfjskit</h3>
-          <div class='mb1'><code>2.2.3</code></div>
+          <div class='mb1'><code>2.4.0</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -208,6 +208,12 @@
                         href='#pdfviewerrotateallpages'
                         class='regular pre-open'>
                         #rotateAllPages
+                      </a></li>
+                      
+                      <li><a
+                        href='#pdfviewerrotatepages'
+                        class='regular pre-open'>
+                        #rotatePages
                       </a></li>
                       
                       <li><a
@@ -3081,6 +3087,69 @@ If omitted HTML string will be returned.
   <p>Rotates all pages by delta degree.</p>
 
     <div class='pre p1 fill-light mt0'>rotateAllPages(delta: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>delta</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
+	    The degree to add to the rotation.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='pdfviewerrotatepages'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>rotatePages(delta)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Rotates all pages or current page according to current rotation mode, by delta degree.</p>
+
+    <div class='pre p1 fill-light mt0'>rotatePages(delta: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</div>
   
   
 
