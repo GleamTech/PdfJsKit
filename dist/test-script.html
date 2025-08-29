@@ -1,27 +1,53 @@
 <!DOCTYPE html>
 <html>
-  <head>
-	  <meta charset="utf-8">
-	  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>PdfJsKit - Script Bundle Test</title>
-	  <script src="pdfjskit\pdfjskit.min.js"></script>
-  </head>
-  <body>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>PdfJsKit - Script Bundle Test</title>
+  <script src="pdfjskit\pdfjskit.min.js"></script>
+  <style>
+    .full-viewport {
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      overflow: hidden !important;
+      resize: none !important;
+    }
+  </style>
+</head>
+<body>
 
-    <div id="container"></div>
+  <div id="container"></div>
 
-    <script type="module">
-      var pdfViewer = new PdfJsKit.PdfViewer({
-        documentUrl: "pdfjskit/sample.pdf",
-        width: "80%",
-        height: 720,
-        resizable: true,
-        language: "en-US",
-        theme: "slate, classic-dark"
+  <script>
+    var pdfViewer = new PdfJsKit.PdfViewer({
+      documentUrl: "pdfjskit/sample.pdf",
+      width: "80%",
+      height: 720,
+      resizable: true,
+      language: "en-US",
+      theme: "slate, classic-dark"
+    });
+
+    pdfViewer.render(document.getElementById("container"));
+
+    PdfJsKit.DomUtil.detectScreenSize(window,
+      screenSize => { //current and onChange
+        var elements = [
+          document.documentElement,
+          document.body,
+          document.getElementById("container"),
+          pdfViewer.element
+        ];
+
+        if (screenSize !== "desktopSize")
+          elements.forEach(element => element.classList.add("full-viewport"));
+        else
+          elements.forEach(element => element.classList.remove("full-viewport"));
       });
+  </script>
 
-      pdfViewer.render(document.getElementById("container"));
-    </script>
-
-  </body>
+</body>
 </html>
