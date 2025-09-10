@@ -22,22 +22,22 @@
   <div id="container"></div>
 
   <script type="module">
-    import { PdfViewer, DomUtil } from "./pdfjskit/pdfjskit.min.mjs"
+    import { PdfViewer, PageUtil } from "./pdfjskit/pdfjskit.min.mjs"
 
     var pdfViewer = new PdfViewer({
       documentUrl: "pdfjskit/sample.pdf",
       width: "80%",
       height: 720,
-      resizable: true,
-      language: "en-US",
-      theme: "slate, classic-dark"
+      //resizable: true,
+      //language: "en-US",
+      //theme: "slate, classic-dark"
     });
 
     pdfViewer.render(document.getElementById("container"));
     
 
-    DomUtil.detectScreenSize(window,
-      screenSize => { //current and onChange
+    PageUtil.registerScreenSizeChangeEvent(window,
+      e => { //current and onChange
         var elements = [
           document.documentElement,
           document.body,
@@ -45,10 +45,10 @@
           pdfViewer.element
         ];
 
-        if (screenSize !== "desktopSize")
-          elements.forEach(element => element.classList.add("full-viewport"));
+        if (e.screenSize !== "desktopSize")
+          elements.forEach(element => element?.classList.add("full-viewport"));
         else
-          elements.forEach(element => element.classList.remove("full-viewport"));
+          elements.forEach(element => element?.classList.remove("full-viewport"));
       });
   </script>
 

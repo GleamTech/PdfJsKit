@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset='utf-8'>
-  <title>pdfjskit 2.4.5 | Documentation</title>
+  <title>pdfjskit 2.4.8 | Documentation</title>
   <meta name='description' content='PdfJsKit is a PDF Viewer built on top of PDF.js, with modern UI and new features which supports integration for all JS frameworks.'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' rel='stylesheet'>
@@ -16,7 +16,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>pdfjskit</h3>
-          <div class='mb1'><code>2.4.5</code></div>
+          <div class='mb1'><code>2.4.8</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -435,7 +435,7 @@ If not set, script version (.js) will try to use same directory of the script, m
                 <tr>
   <td class='break-word'><span class='code bold'>options.language</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>
   
-    (default <code>&quot;en-US&quot;</code>)
+    (default <code>navigator.language||&quot;en-US&quot;</code>)
   </td>
   <td class='break-word'><span>The display (user interface) language of the component.
 It can be set to the two-letter language names like 
@@ -1291,6 +1291,17 @@ function showEvent(e) {
     (default <code>true</code>)
   </td>
   <td class='break-word'><span>Ability to fill values into form fields of the document. Requires also ViewAnnotations permission.
+</span></td>
+</tr>
+
+
+  
+    <tr>
+  <td class='break-word'><span class='code bold'>options.permissions.editComments</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code>
+  
+    (default <code>false</code>)
+  </td>
+  <td class='break-word'><span>Ability to edit comments of the document. This is disabled by default as it's not stable yet.
 </span></td>
 </tr>
 

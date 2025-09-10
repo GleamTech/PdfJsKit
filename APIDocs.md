@@ -78,7 +78,7 @@ Renders PDF.js viewer in an iframe but updates UI theme and structure for a neat
         Relative paths will be considered relative to the host page.
         If not set, script version (.js) will try to use same directory of the script, module version (.mjs) will use `"pdfjskit"`. (optional, default `"pdfjskit"`)
     *   `options.language` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The display (user interface) language of the component.
-        It can be set to the two-letter language names like `"en"`, `"de"`, `"fr"` etc. or to specific languages like `"en-US"`, `"de-DE"`, `"fr-FR"` etc. (optional, default `"en-US"`)
+        It can be set to the two-letter language names like `"en"`, `"de"`, `"fr"` etc. or to specific languages like `"en-US"`, `"de-DE"`, `"fr-FR"` etc. (optional, default `navigator.language||"en-US"`)
     *   `options.license` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The license info (JSON) you received when you purchased.
         The evaluation version is the same as the purchased one – the trial version simply becomes licensed when you apply the license.
         If not set, you will see license reminder every time you load a document.    {
@@ -253,6 +253,7 @@ Renders PDF.js viewer in an iframe but updates UI theme and structure for a neat
         *   `options.permissions.viewAnnotations` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to view annotations of the document. Note that this can also effect displaying of the signatures in the document so be aware when you disable it. (optional, default `true`)
         *   `options.permissions.editAnnotations` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to edit annotations of the document. Tools like Add Signature, Highlight, Draw, Add Image will be available. If no ViewAnnotations permission, then you can add new annotations but not view and edit existing ones. (optional, default `true`)
         *   `options.permissions.fillForms` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to fill values into form fields of the document. Requires also ViewAnnotations permission. (optional, default `true`)
+        *   `options.permissions.editComments` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to edit comments of the document. This is disabled by default as it's not stable yet. (optional, default `false`)
     *   `options.searchOptions` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The text search options of the viewer.If you specify a search term, an automatic search will be done when the document is displayed,
         i.e. the specified term will be searched and the term(s) will be highlighted in the pages.
         For example, if you launch the viewer from a search results page, you can pass the same search term to the viewer.

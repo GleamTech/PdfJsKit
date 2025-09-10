@@ -26,15 +26,15 @@
       documentUrl: "pdfjskit/sample.pdf",
       width: "80%",
       height: 720,
-      resizable: true,
-      language: "en-US",
-      theme: "slate, classic-dark"
+      //resizable: true,
+      //language: "en-US",
+      //theme: "slate, classic-dark"
     });
 
     pdfViewer.render(document.getElementById("container"));
 
-    PdfJsKit.DomUtil.detectScreenSize(window,
-      screenSize => { //current and onChange
+    PdfJsKit.PageUtil.registerScreenSizeChangeEvent(window,
+      e => { //current and onChange
         var elements = [
           document.documentElement,
           document.body,
@@ -42,10 +42,10 @@
           pdfViewer.element
         ];
 
-        if (screenSize !== "desktopSize")
-          elements.forEach(element => element.classList.add("full-viewport"));
+        if (e.screenSize !== "desktopSize")
+          elements.forEach(element => element?.classList.add("full-viewport"));
         else
-          elements.forEach(element => element.classList.remove("full-viewport"));
+          elements.forEach(element => element?.classList.remove("full-viewport"));
       });
   </script>
 
