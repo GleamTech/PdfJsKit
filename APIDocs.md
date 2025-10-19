@@ -253,7 +253,7 @@ Renders PDF.js viewer in an iframe but updates UI theme and structure for a neat
         *   `options.permissions.viewAnnotations` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to view annotations of the document. Note that this can also effect displaying of the signatures in the document so be aware when you disable it. (optional, default `true`)
         *   `options.permissions.editAnnotations` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to edit annotations of the document. Tools like Add Signature, Highlight, Draw, Add Image will be available. If no ViewAnnotations permission, then you can add new annotations but not view and edit existing ones. (optional, default `true`)
         *   `options.permissions.fillForms` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to fill values into form fields of the document. Requires also ViewAnnotations permission. (optional, default `true`)
-        *   `options.permissions.editComments` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to edit comments of the document. This is disabled by default as it's not stable yet. (optional, default `false`)
+        *   `options.permissions.editComments` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Ability to edit comments of the document. (optional, default `true`)
     *   `options.searchOptions` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The text search options of the viewer.If you specify a search term, an automatic search will be done when the document is displayed,
         i.e. the specified term will be searched and the term(s) will be highlighted in the pages.
         For example, if you launch the viewer from a search results page, you can pass the same search term to the viewer.
@@ -432,7 +432,9 @@ Renders the component in the page.
 #### Parameters
 
 *   `target` **[Element](https://developer.mozilla.org/docs/Web/API/Element)?** The target DOM element, e.g. the container or adjacent element.
-    If omitted HTML string will be returned.
+    If omitted, a HTML string will be returned.
+    Note that it's expected that user later adds this HTML string to the same window as the caller,
+    not to other frames, otherwise we cannot track iframe loading events, and component would not work.
 *   `position` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** A string representing the position relative to the targetElement*   'beforebegin': Before the targetElement itself.
     *   'afterbegin': Just inside the targetElement, before its first child.
     *   'beforeend': Just inside the targetElement, after its last child.
