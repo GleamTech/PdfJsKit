@@ -127,7 +127,8 @@ Here is a list of all the options with the default values, that can be passed to
     viewAnnotations: true,
     editAnnotations: true,
     fillForms: true,
-    editComments: true
+    editComments: true,
+    runScripts: true
   },
 
   searchOptions: {
