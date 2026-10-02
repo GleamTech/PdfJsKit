@@ -1,10 +1,10 @@
 ![PdfJsKit Logo](https://raw.githubusercontent.com/GleamTech/PdfJsKit/master/images/logo-wide.svg "PdfJsKit Logo")
 
-# PDF.js supercharged with custom themes
+# PDFJS supercharged with custom themes
 
 Integrate a PDF Viewer into your web project rapidly.
 
-*   Modern UI and new features on top of PDF.js.
+*   Modern UI and new features on top of PDFJS.
 
 *   HTML5 zero-footprint PDF Viewer.
 
@@ -12,13 +12,13 @@ Integrate a PDF Viewer into your web project rapidly.
 
 PDF.js is a great open-source project which is frequently updated and new features are being added to, however looks-wise it's ugly, or maybe let's say it looks outdated. How about getting the latest PDF features and fixes from PDF.js but having a slick look on the presentation side?
 
-Our pdf viewer is unobtrusive, we don't directly change code of PDF.js, we just include PDF.js in an iframe and at runtime override HTML, JS and CSS to offer a slick modern look and better ui structure and usability and new features. This way we can always update PDF.js to the latest version easily and get all bug fixes and improvements.
+Our pdf viewer is unobtrusive, we don't directly change code of PDFJS, we just include PDFJS in an iframe and at runtime override HTML, JS and CSS to offer a slick modern look and better ui structure and usability and new features. This way we can always update PDFJS to the latest version easily and get all bug fixes and improvements.
 
-Other pdf viewers based on PDF.js usually don't update the default look, and the ones that does usually miss functionality due to separating into components but partially implementing them or offer a bad/partial API.
+Other pdf viewers based on PDFJS usually don't update the default look, and the ones that does usually miss functionality due to separating into components but partially implementing them or offer a bad/partial API.
 
 [![NPM Version](https://img.shields.io/npm/v/pdfjskit?style=for-the-badge)](https://www.npmjs.com/package/pdfjskit)
 
-![PDF.js Custom Themes](https://raw.githubusercontent.com/GleamTech/PdfJsKit/master/images/pdf-js-custom-themes.png "PDF.js Custom Themes")
+![PDFJS Custom Themes](https://raw.githubusercontent.com/GleamTech/PdfJsKit/master/images/pdf-js-custom-themes.png "PDFJS Custom Themes")
 
 ## Getting started
 
@@ -85,7 +85,9 @@ Here is a list of all the options with the default values, that can be passed to
   verticalToolbarVisible: true,
   toolbarAtBottom: false,
   theme: "slate, classic-dark", //if multiple values, second is dark mode (auto switched)
+  uiSizing: "normal",
   mobileMode: "on-any", //onPhone, onTablet, never
+  linkTarget="blank",
   debugMode: false,
 
   events: {

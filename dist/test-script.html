@@ -1,31 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>PdfJsKit - Script Bundle Test</title>
+  <link rel="stylesheet" href="test.css">
   <script src="pdfjskit\pdfjskit.min.js"></script>
-  <style>
-    .full-viewport {
-      width: 100% !important;
-      height: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      overflow: hidden !important;
-      resize: none !important;
-    }
-  </style>
 </head>
 <body>
 
-  <div id="container"></div>
+  <main>
+    <header>
+      <h1>PdfViewer Showcase <span>Script Bundle Test</span></h1>
+
+      <label class="theme-picker">
+        Large UI Sizing
+        <input type="checkbox" id="uiSizing">
+      </label>
+      <label>
+        Theme
+        <select id="theme">
+          <option value="slate" selected>Slate</option>
+          <option value="white">White</option>
+          <option value="classic-light">Classic Light</option>
+          <option value="classic-dark">Classic Dark</option>
+        </select>
+      </label>
+    </header>
+
+    <div id="container"></div>
+  </main>
 
   <script>
     var pdfViewer = new PdfJsKit.PdfViewer({
       documentUrl: "pdfjskit/sample.pdf",
-      width: "80%",
-      height: 720,
+      width: "100%",
+      height: "100%",
       //resizable: true,
       //language: "en-US",
       //theme: "slate, classic-dark"
@@ -34,20 +44,16 @@
     pdfViewer.render(document.getElementById("container"));
 
 
-    PdfJsKit.PageUtil.registerScreenSizeChangeEvent(window,
-      e => { //current and onChange
-        var elements = [
-          document.documentElement,
-          document.body,
-          document.getElementById("container"),
-          pdfViewer.element
-        ];
+    var themeElement = document.getElementById("theme");
+    themeElement.addEventListener("change", () => {
+      pdfViewer.theme = themeElement.value;
+    });
 
-        if (e.screenSize !== "desktopSize")
-          elements.forEach(element => element?.classList.add("full-viewport"));
-        else
-          elements.forEach(element => element?.classList.remove("full-viewport"));
-      });
+    var uiSizingElement = document.getElementById("uiSizing");
+    uiSizingElement.checked = (pdfViewer.uiSizing === "large");
+    uiSizingElement.addEventListener("change", () => {
+      pdfViewer.uiSizing = uiSizingElement.checked ? "large" : "normal";
+    });
   </script>
 
 </body>

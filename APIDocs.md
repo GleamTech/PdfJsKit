@@ -21,6 +21,7 @@
     *   [pageRotation](#pagerotation)
     *   [fileName](#filename)
     *   [theme](#theme)
+    *   [uiSizing](#uisizing)
     *   [language](#language)
     *   [license](#license)
         *   [Parameters](#parameters-1)
@@ -129,14 +130,18 @@ Renders PDF.js viewer in an iframe but updates UI theme and structure for a neat
     *   `options.verticalToolbarVisible` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** A value that specifies whether the right vertical toolbar is visible. (optional, default `true`)
     *   `options.toolbarAtBottom` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** A value that specifies whether the top toolbar should be placed at the bottom instead. (optional, default `false`)
     *   `options.theme` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The theme to use for the viewer.
-        Possible values are `"slate"`, `"classic-light"`, `"classic-dark"` or the CSS class name of a custom theme.
+        Possible values are `"slate"`, `"white"`, `"classic-light"`, `"classic-dark"` or the CSS class name of a custom theme.
         When two values separated by comma is set, the second value will be the dark theme.
         Dark theme is used when a user indicates their preference through an operating system setting (e.g. light or dark mode) or a user agent setting.
         When single value is provided, dark theme is disabled, i.e. the only provided theme will be used always even when user prefers dark mode. (optional, default `"slate, classic-dark"`)
+    *   `options.uiSizing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** A value that specifies the UI sizing to use for the viewer.
+        Possible values are `"normal"`, `"large"` (case insensitive). (optional, default `"normal"`)
     *   `options.mobileMode` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** A value that specifies on which mobile device type to use large UI sizing for the viewer.
         Possible values are `"on-any"`, `"on-phone"`, `"on-tablet"`, `"never"` (case insensitive and dashes can be omitted).
         Note that device features are not detected, instead browser's viewport size is used to decide the UI sizing.
         So if you manually resize the browser window (or emulate a device via browser's F12 dev tools), phone or tablet size can be triggered. (optional, default `"on-any"`)
+    *   `options.linkTarget` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** A value that specifies the `target` attribute for external links in the PDF document.
+        Possible values are `"none"`, `"self"`, `"blank"`, `"parent"`, `"top"` (case insensitive). (optional, default `"blank"`)
     *   `options.debugMode` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** A value indicating whether to show details in text box in the addition to the main message on error dialog.
         This can be useful for debugging purpose. (optional, default `false`)
     *   `options.events` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The event handlers to register.
@@ -392,6 +397,13 @@ Possible values are `"slate"`, `"classic-light"`, `"classic-dark"` or the CSS cl
 When two values separated by comma is set, the second value will be the dark theme.
 Dark theme is used when a user indicates their preference through an operating system setting (e.g. light or dark mode) or a user agent setting.
 When single value is provided, dark theme is disabled, i.e. the only provided theme will be used always even when user prefers dark mode.
+
+Type: [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+### uiSizing
+
+Gets or sets the UI sizing to use for the viewer.
+Possible values are `"normal"`, `"large"` (case insensitive).
 
 Type: [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
